@@ -1,0 +1,7 @@
+# Block everything
+*
+
+# Unblock folders
+!*/
+# Unblock everything with an file extention
+!*.*
