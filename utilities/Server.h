@@ -8,16 +8,16 @@
 
 class Server
 {
-  public:
-    Server();
-    Server(int port);
-    int receive(char* buffer, int bufferLength);
+public:
+  Server();
+  Server(int port);
+  int receive(char *buffer, int bufferLength);
 
-  private:
-    int listeningServer_fd = -1;
-    struct sockaddr_in address;
-    int createSocket();
-    void attachSocket(int server_fd, int port);
-    void listenSocket(int server_fd);
+private:
+  int listeningServer_fd = -1;
+  struct sockaddr_in address;
+  int createSocket();
+  void attachSocket(int server_fd, int port);
+  void listenSocket(int server_fd);
 };
 #endif

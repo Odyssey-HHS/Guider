@@ -12,7 +12,8 @@ int main(int argc, char const *argv[])
   // Create an empty buffer. (If this isn't empty stuff breaks! Default creation has random junk.)
   char buffer[1024] = {0};
 
-  if (server.receive(buffer, 1024) < 0) {
+  if (server.receive(buffer, 1024) < 0)
+  {
     perror("Failed to accept incoming connection.\n");
   }
 

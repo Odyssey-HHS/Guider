@@ -13,7 +13,7 @@ int Server::createSocket()
 
   if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
   {
-    perror("Failed to create server socket.");
+    perror("Failed to create server socket.\n");
     exit(EXIT_FAILURE);
   }
 
@@ -26,7 +26,7 @@ void Server::attachSocket(int server_fd, int port)
 
   if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
   {
-    perror("Failed to bind socket on protocol level.");
+    perror("Failed to bind socket on protocol level.\n");
     exit(EXIT_FAILURE);
   }
 
@@ -36,7 +36,7 @@ void Server::attachSocket(int server_fd, int port)
 
   if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
   {
-    perror("Failed to bind socket on address level.");
+    perror("Failed to bind socket on address level.\n");
     exit(EXIT_FAILURE);
   }
 }
@@ -45,18 +45,18 @@ void Server::listenSocket(int server_fd)
 {
   if (listen(server_fd, 3) < 0)
   {
-    perror("Failed to listen to bound socket.");
+    perror("Failed to listen to bound socket.\n");
     exit(EXIT_FAILURE);
   }
 
   listeningServer_fd = server_fd;
 }
 
-int Server::receive(char* buffer, int bufferLength)
+int Server::receive(char *buffer, int bufferLength)
 {
   if (listeningServer_fd == -1)
   {
-    perror("Failed to receive, no servers are listening!");
+    perror("Failed to receive, no servers are listening!\n");
     exit(EXIT_FAILURE);
   }
 
@@ -65,7 +65,7 @@ int Server::receive(char* buffer, int bufferLength)
 
   if ((newSocket = accept(listeningServer_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
   {
-    perror("Failed to accept incomming connection.");
+    perror("Failed to accept incomming connection.\n");
     exit(EXIT_FAILURE);
   }
 
