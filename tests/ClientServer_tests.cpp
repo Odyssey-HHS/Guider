@@ -14,7 +14,6 @@ void serverOperations(std::promise<char *> &&p)
 
   std::cout << "[TESTS] Listening for incoming connections\n";
 
-  // Create an empty buffer. (If this isn't empty stuff breaks! Default creation has random junk.)
   char serverIncoming[1024]{0};
 
   if (server.receive(serverIncoming, 1024) < 0)

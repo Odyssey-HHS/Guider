@@ -13,8 +13,12 @@ class Client
 public:
   Client(const char *address);
   Client(const char *address, const int port);
+
+  /* Send a message to the open socket connection.  Returns the number sent or -1. */
   int send(const char *msg) const;
+  /* Send a message to the open socket connection.  Returns the number sent or -1. */
   int send(const char *msg, const int length) const;
+  /* Receive a message from the open socket connection. Return the number read, -1 for errors or 0 for EOF. */
   int receive(char *buffer, int bufferLength) const;
 
 private:

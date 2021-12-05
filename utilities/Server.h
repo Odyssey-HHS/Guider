@@ -11,6 +11,7 @@ class Server
 public:
   Server();
   Server(int port);
+  /* Receive message from the open scoket connection. Return the number read, -1 for errors or 0 for EOF. */
   int receive(char *buffer, int bufferLength);
 
 private:

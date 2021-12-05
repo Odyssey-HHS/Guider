@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+/* Example server listening on port 8000. */
 int main(int argc, char const *argv[])
 {
   Server server;
