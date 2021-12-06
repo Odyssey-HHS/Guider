@@ -13,15 +13,14 @@ int main(int argc, char const *argv[])
   // Create an empty buffer. (If this isn't empty stuff breaks! Default creation has random junk.)
   char buffer[1024] = {0};
 
-  if (server.receive(buffer, 1024) < 0)
-  {
-    perror("Failed to accept incoming connection.\n");
-  }
+  // Wait for an client
+  int connection_fd = server.awaitClient();
 
-  printf("%s\n", buffer);
+  server.receive(connection_fd, buffer, 1024);
+  server.send(connection_fd, buffer);
 
-  std::cout << "Received message! Existing\n";
+  server.send(connection_fd, "\n\nHello World!\n");
 
-  /* code */
+    std::cout << "Working fine!\n";
   return 0;
 }
