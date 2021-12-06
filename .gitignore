@@ -5,3 +5,5 @@
 !*/
 # Unblock everything with an file extention
 !*.*
+
+build/
