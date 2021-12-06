@@ -1,5 +1,9 @@
 #include "Client.h"
 
+Client::Client() {
+  connectedSocket_fd = -1;
+}
+
 Client::Client(const char *address)
 {
   int socket_fd = createSocket(address, 8000);
