@@ -1,50 +1,40 @@
-#include "Client.h"
-
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 #include <iostream>
 
-#include <string>
-#include <sstream>
+#include "Module.h"
 
-const char* hosts[] = {"172.16.99.100", "172.16.99.101"};
-Client connections[16] = {};
+class ExampleModule : public Module
+{
+public:
+  ExampleModule(Client client);
+  int led0 = -1;
+  int led1 = -1;
+  int button0 = -1;
+  void setInputsJSON(const char *json);
+  char *getOutputsJSON() const;
+};
 
-void connectToClients() {
-  for (int i = 0; hosts[i] != 0; i++) {
-    Client client(hosts[i], 8080);
-    connections[i] = client;
-  }
+ExampleModule::ExampleModule(Client client) : Module(client) {}
+
+void ExampleModule::setInputsJSON(const char *json)
+{
+  // Grep the input values from the JSON and store it in this class.
+  std::cout << "Not implemented\n";
+  return;
+}
+
+char *ExampleModule::getOutputsJSON() const {
+  // Grep the outputs of this class and return it as JSON
+  std::cout << "Not implemented\n";
+  return {0};
 }
 
 int main(int argc, char const *argv[])
 {
-  connectToClients();
+  Client client("172.16.99.100", 8080);
+  ExampleModule module(client);
 
-  while (1) {
-    char wemos1Buffer[1024] = {0};
-
-    // TODO: Idea change to 2 threads 1 doing operation logic and one writing new values / reading new values from the server.
-
-    // Read from Wemos 1
-    connections[0].send("3:0\n");
-    connections[0].receive(wemos1Buffer, 1024);
-
-    // Debug send the buffer
-    printf("Buffer1: %s", wemos1Buffer);
-
-    // Send to Wemos 2
-    std::ostringstream oss;
-    oss << "1:" << wemos1Buffer[0] << "\n";
-    std::string string = oss.str();
-
-    char wemos2Buffer[1024] = {0};
-
-    connections[1].send(string.c_str());
-    connections[1].receive(wemos2Buffer, 1024);
-
-    // Debug send the buffer
-    printf("Buffer2: %s", wemos2Buffer);
-
-    // Sleep for a bit.
-    usleep(500000);
-  }
+  std::cout << "test: " << module.led0;
 }
