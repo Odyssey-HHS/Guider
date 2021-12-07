@@ -3,13 +3,14 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
+ExampleModule::ExampleModule() : Module(Client()) {}
 ExampleModule::ExampleModule(Client client) : Module(client) {}
 
-void ExampleModule::setInputsJSON(const char *json)
+void ExampleModule::setInputsJSON(const std::string json)
 {
   // 1. Parse a JSON string into DOM.
   rapidjson::Document document;
-  document.Parse(json);
+  document.Parse(json.c_str());
 
   this->button0 = document["button0"].GetBool();
 }

@@ -1,40 +1,53 @@
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 #include <iostream>
 
-#include "Module.h"
+#include "ExampleModule.h"
+#include <thread>
 
-class ExampleModule : public Module
+ExampleModule testMod;
+bool testModLocked = false;
+
+void fetcher()
 {
-public:
-  ExampleModule(Client client);
-  int led0 = -1;
-  int led1 = -1;
-  int button0 = -1;
-  void setInputsJSON(const char *json);
-  char *getOutputsJSON() const;
-};
+  while (1)
+  {
+    while (testModLocked)
+      ;
+    testModLocked = true;
+    const std::string outputs = testMod.getOutputsJSON();
+    testModLocked = false;
 
-ExampleModule::ExampleModule(Client client) : Module(client) {}
+    // This takes a "long" time.
+    const std::string inputs = testMod.fetch(outputs.c_str());
 
-void ExampleModule::setInputsJSON(const char *json)
-{
-  // Grep the input values from the JSON and store it in this class.
-  std::cout << "Not implemented\n";
-  return;
+    while (testModLocked)
+      ;
+    testModLocked = true;
+    testMod.setInputsJSON(inputs.c_str());
+    testModLocked = false;
+    usleep(100000); // But of sleep because we only have one module
+  }
 }
 
-char *ExampleModule::getOutputsJSON() const {
-  // Grep the outputs of this class and return it as JSON
-  std::cout << "Not implemented\n";
-  return {0};
+void logic()
+{
+  while (1)
+  {
+    while (testModLocked)
+      ;
+    testMod.led0 = testMod.button0;
+  }
 }
 
 int main(int argc, char const *argv[])
 {
   Client client("172.16.99.100", 8080);
-  ExampleModule module(client);
+  testMod = ExampleModule(client);
 
-  std::cout << "test: " << module.led0;
+  std::cout << "Up and running!";
+
+  std::thread fetcherThread(fetcher);
+  std::thread logicThread(logic);
+
+  fetcherThread.join();
+  logicThread.join();
 }

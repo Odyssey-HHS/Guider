@@ -2,11 +2,10 @@
 
 Module::Module(Client client) : connection(client){};
 
-void Module::fetch()
+std::string Module::fetch(const std::string outputJson)
 {
-    this->connection.send(this->getOutputsJSON().c_str());
+    this->connection.send(outputJson.c_str());
     char buffer[256] = {0};
     this->connection.receive(buffer, 256);
-
-    this->setInputsJSON(buffer);
+    return std::string(buffer);
 }
