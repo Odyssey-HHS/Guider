@@ -6,3 +6,4 @@ target_link_libraries(Guider PRIVATE Threads::Threads)
 
 target_link_libraries(Guider PUBLIC Server)
 target_link_libraries(Guider PUBLIC Client)
+target_link_libraries(Guider PUBLIC Module)
