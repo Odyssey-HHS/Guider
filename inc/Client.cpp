@@ -1,5 +1,9 @@
 #include "Client.h"
 
+Client::Client() {
+  connectedSocket_fd = -1;
+}
+
 Client::Client(const char *address)
 {
   int socket_fd = createSocket(address, 8000);
@@ -72,7 +76,7 @@ int Client::receive(char *buffer, int bufferLength) const
 {
   if (connectedSocket_fd == -1)
   {
-    perror("Failed to send message, socket isn't connected!\n");
+    perror("Failed to receive message, socket isn't connected!\n");
     exit(EXIT_FAILURE);
   }
 

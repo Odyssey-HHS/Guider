@@ -52,22 +52,50 @@ void Server::listenSocket(int server_fd)
   listeningServer_fd = server_fd;
 }
 
-int Server::receive(char *buffer, int bufferLength)
+int Server::send(const int socket_fd, const char *msg) const
 {
-  if (listeningServer_fd == -1)
+  if (socket_fd == -1)
   {
-    printf("Failed to receive, no servers are listening!\n");
+    perror("Failed to send message, socket isn't connected!\n");
     exit(EXIT_FAILURE);
   }
+
+  return ::send(socket_fd, msg, strlen(msg), 0);
+}
+
+int Server::send(const int socket_fd, const char *msg, const int msgLength) const
+{
+  if (socket_fd == -1)
+  {
+    perror("Failed to send message, socket isn't connected!\n");
+    exit(EXIT_FAILURE);
+  }
+
+  return ::send(socket_fd, msg, msgLength, 0);
+}
+
+int Server::receive(const int socket_fd, char *buffer, int bufferLength) const
+{
+  if (socket_fd == -1)
+  {
+    perror("Failed to receive message, socket isn't connected!\n");
+    exit(EXIT_FAILURE);
+  }
+
+  return read(socket_fd, buffer, bufferLength);
+}
+
+int Server::awaitClient() const
+{
+  int newSocket_fd;
 
   int addrlen = sizeof(address);
-  int newSocket;
 
-  if ((newSocket = accept(listeningServer_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
+  if ((newSocket_fd = accept(listeningServer_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
   {
-    printf("Failed to accept incomming connection.\n");
+    perror("accept");
     exit(EXIT_FAILURE);
   }
 
-  return read(newSocket, buffer, bufferLength);
+  return newSocket_fd;
 }

@@ -11,6 +11,7 @@
 class Client
 {
 public:
+  Client();
   Client(const char *address);
   Client(const char *address, const int port);
 
