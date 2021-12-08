@@ -6,9 +6,13 @@ class ExampleModule : public Module
 public:
   ExampleModule();
   ExampleModule(Client client);
-  bool led0 = false;
-  bool led1 = false;
-  bool button0 = false;
+  bool ledIn = false;
+  bool ledOut = false;
+  int door = 0;
+
+  bool buttonOut = false;
+  bool buttonIn = false;
+
   void setInputsJSON(const std::string json);
   std::string getOutputsJSON() const;
 };

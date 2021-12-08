@@ -34,7 +34,14 @@ void logic()
   {
     while (testModLocked)
       ;
-    testMod.led0 = testMod.button0;
+      if (testMod.buttonIn) {
+        testMod.door = 0;
+      } else if (testMod.buttonOut) {
+        testMod.door = 180;
+      }
+      else {
+        testMod.door = 65;
+      }
   }
 }
 

@@ -12,7 +12,8 @@ void ExampleModule::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  this->button0 = document["button0"].GetBool();
+  this->buttonIn = document["buttonIn"].GetBool();
+  this->buttonOut = document["buttonOut"].GetBool();
 }
 
 std::string ExampleModule::getOutputsJSON() const
@@ -23,8 +24,9 @@ std::string ExampleModule::getOutputsJSON() const
 
   rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
 
-  document.AddMember("led0", this->led0, allocator);
-  document.AddMember("led1", this->led1, allocator);
+  document.AddMember("ledIn", this->ledIn, allocator);
+  document.AddMember("ledOut", this->ledOut, allocator);
+  document.AddMember("door", this->door, allocator);
 
   // Stringify object
   rapidjson::StringBuffer buffer;
