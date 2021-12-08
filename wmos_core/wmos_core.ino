@@ -83,7 +83,7 @@ void handleConnections() {
     String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
 
     StaticJsonDocument<70> jsonIn;
-    deserializeJson(jsons, s);
+    deserializeJson(jsonIn, s);
     led0 = jsonIn["led0"];
     led1 = jsonIn["led1"];
 
