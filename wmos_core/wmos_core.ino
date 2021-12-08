@@ -8,21 +8,21 @@
  * NOTE: using library ArduinoJson 6.18.5
  */
 #include <ArduinoJson.h>
-
 #include <ESP8266WiFi.h>
 #include <ArduinoWiFiServer.h>
 
-#ifndef STASSID
-#define STASSID "G41C control node"
-#define STAPSK  "g41cstandsforgalc"
-#endif
+#define STASSID "3.1415"
+#define STAPSK  "YouShallNotPassword"
 
-//IPAddress local_IP(172, 16, 99, 101);
-//IPAddress gateway(172, 16, 99, 1);
-//IPAddress subnet(255, 255, 255, 0);
+IPAddress local_IP(172, 16, 99, 100);
+IPAddress gateway(172, 16, 99, 1);
+IPAddress subnet(255, 255, 255, 0);
 
 const char* ssid     = STASSID;
 const char* password = STAPSK;
+
+bool led0 = false;
+bool led1 = true;
 
 ArduinoWiFiServer server(8080);
 
@@ -33,9 +33,9 @@ void setup() {
   Serial.println(ssid);
 
   // Configure static IP.
-//  if (!WiFi.config(local_IP, gateway, subnet)) {
-//    Serial.println("STA Failed to configure");
-//  }
+  if (!WiFi.config(local_IP, gateway, subnet)) {
+    Serial.println("STA Failed to configure");
+  }
 
   // Start connecting to the WiFi
   WiFi.begin(ssid, password);
@@ -56,15 +56,12 @@ void setup() {
   server.begin();
   Serial.println("TCP Server started listening...");
 
-  // Set the I/O
-
-  // Buttons
-  pinMode(D6, INPUT_PULLUP);
-  pinMode(D7, INPUT_PULLUP);
-
   // Leds
-  pinMode(D1, OUTPUT);
-  pinMode(D2, OUTPUT);
+  pinMode(16, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(4, INPUT_PULLUP);
+  delay(500);
+  Serial.end();
 }
 
 void handleConnections();
@@ -72,6 +69,10 @@ void handleConnections();
 void loop() {
   // Handle clients sending request to the TCP server.
   handleConnections();
+
+  digitalWrite(5, led0);
+  digitalWrite(16, led1);
+
 }
 
 void handleConnections() {
@@ -79,28 +80,18 @@ void handleConnections() {
   WiFiClient client = server.available();
   
   if (client) { // Check if client has send a message, otherwise this is false.
-    Serial.println("Got something");
-    String s = client.readStringUntil(';'); // Read the incoming message. Delimited by a new line char.
-    s.trim(); // trim eventual \r
-    Serial.print("Incoming message from client; ");
-    Serial.println(s); // print the message to Serial Monitor
+    String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
 
-    //deserialize incoming json string
-    StaticJsonDocument<70> jsons;
-    
+    StaticJsonDocument<70> jsonIn;
     deserializeJson(jsons, s);
-    Serial.println((String) jsons["var1"]);
-    Serial.println((String) jsons["var2"]);
+    led0 = jsonIn["led0"];
+    led1 = jsonIn["led1"];
 
-
-    //serialize a new json string with the vars swapped around
     StaticJsonDocument<70> jsonOut;
-    jsonOut["var1"] = jsons["var2"];
-    jsonOut["var2"] =  jsons["var1"];
+    jsonOut["button0"] = !digitalRead(4);
 
     String output;
     serializeJson(jsonOut, output);
-
     client.print(output);
   }
 }
