@@ -1,50 +1,60 @@
-#include "Client.h"
-
 #include <iostream>
 
-#include <string>
-#include <sstream>
+#include "ExampleModule.h"
+#include <thread>
 
-const char* hosts[] = {"172.16.99.100", "172.16.99.101"};
-Client connections[16] = {};
+ExampleModule testMod;
+bool testModLocked = false;
 
-void connectToClients() {
-  for (int i = 0; hosts[i] != 0; i++) {
-    Client client(hosts[i], 8080);
-    connections[i] = client;
+void fetcher()
+{
+  while (1)
+  {
+    while (testModLocked)
+      ;
+    testModLocked = true;
+    const std::string outputs = testMod.getOutputsJSON();
+    testModLocked = false;
+
+    // This takes a "long" time.
+    const std::string inputs = testMod.fetch(outputs.c_str());
+
+    while (testModLocked)
+      ;
+    testModLocked = true;
+    testMod.setInputsJSON(inputs.c_str());
+    testModLocked = false;
+    usleep(100000); // But of sleep because we only have one module
+  }
+}
+
+void logic()
+{
+  while (1)
+  {
+    while (testModLocked)
+      ;
+      if (testMod.buttonIn) {
+        testMod.door = 0;
+      } else if (testMod.buttonOut) {
+        testMod.door = 180;
+      }
+      else {
+        testMod.door = 65;
+      }
   }
 }
 
 int main(int argc, char const *argv[])
 {
-  connectToClients();
+  Client client("172.16.99.100", 8080);
+  testMod = ExampleModule(client);
 
-  while (1) {
-    char wemos1Buffer[1024] = {0};
+  std::cout << "Up and running!";
 
-    // TODO: Idea change to 2 threads 1 doing operation logic and one writing new values / reading new values from the server.
+  std::thread fetcherThread(fetcher);
+  std::thread logicThread(logic);
 
-    // Read from Wemos 1
-    connections[0].send("3:0\n");
-    connections[0].receive(wemos1Buffer, 1024);
-
-    // Debug send the buffer
-    printf("Buffer1: %s", wemos1Buffer);
-
-    // Send to Wemos 2
-    std::ostringstream oss;
-    oss << "1:" << wemos1Buffer[0] << "\n";
-    std::string string = oss.str();
-
-    char wemos2Buffer[1024] = {0};
-
-    connections[1].send(string.c_str());
-    connections[1].receive(wemos2Buffer, 1024);
-
-    // Debug send the buffer
-    printf("Buffer2: %s", wemos2Buffer);
-
-    // Sleep for a bit.
-    usleep(500000);
-  }
+  fetcherThread.join();
+  logicThread.join();
 }
