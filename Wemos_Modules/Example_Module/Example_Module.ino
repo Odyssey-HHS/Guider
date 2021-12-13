@@ -94,13 +94,13 @@ void handleConnections()
     {
         String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
 
-        StaticJsonDocument<70> jsonIn;
+        StaticJsonDocument<100> jsonIn;
         deserializeJson(jsonIn, s);
         door = jsonIn["door"];
         ledInside = jsonIn["ledInside"];
         ledOutside = jsonIn["ledOutside"];
 
-        StaticJsonDocument<70> jsonOut;
+        StaticJsonDocument<100> jsonOut;
         jsonOut["buttonOutside"] = buttonOutside;
         jsonOut["buttonInside"] = buttonInside;
 
