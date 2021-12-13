@@ -108,12 +108,12 @@ void handleConnections()
         StaticJsonDocument<100> jsonIn;
         deserializeJson(jsonIn, s);
         door = jsonIn["door"];
-        ledInside = jsonIn["ledInside"];
-        ledOutside = jsonIn["ledOutside"];
+        ledInside = jsonIn["ledI"];
+        ledOutside = jsonIn["ledO"];
 
         StaticJsonDocument<100> jsonOut;
-        jsonOut["buttonOutside"] = buttonOutside;
-        jsonOut["buttonInside"] = buttonInside;
+        jsonOut["btnO"] = buttonOutside;
+        jsonOut["btnI"] = buttonInside;
 
         String output;
         serializeJson(jsonOut, output);
