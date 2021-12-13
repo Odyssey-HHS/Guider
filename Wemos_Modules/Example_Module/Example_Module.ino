@@ -1,9 +1,19 @@
 /*
+ * HHS PJSD 2021
+ * 
+ * Groep 1
+ * 
+ * Marko Estrada Rodriguez
+ * Wouter de Bruijn
+ * Casper Bastiaan-Net
+ * Maurice Tacx
+ * Steven Cowan
+ * 
  * Wemos I/O Server
  *
  * Wemos module connecting to a wifi network and creating a TCP server.
- *
  * Can receive TCP server commands to set or get data.
+ * Can use IO from WIB Board
  *
  * NOTE: using library ArduinoJson 6.18.5
  */
@@ -57,7 +67,8 @@ void setup()
 
     delay(1000);
 
-    doorServo.attach(D5);
+    // Use pin d5 as servo output
+    doorServo.attach(D5);            
     pinMode(D5, OUTPUT);
 
     configureDigitalIC();
@@ -118,7 +129,7 @@ unsigned int readDigitalInputs()
     Wire.endTransmission();                  // End I2C connection
     Wire.requestFrom(DIGITAL_IC_ADDR, 1);    // Request values from PCA9554A , 1 Byte
 
-    unsigned int inputs = Wire.read(); // Copy values to variable inputs
+    unsigned int inputs = Wire.read();       // Copy values to variable inputs
     return (inputs & 0x0f);
 }
 
@@ -127,7 +138,7 @@ void setDigitalOutput(int pin, bool state)
 {
     Wire.beginTransmission(DIGITAL_IC_ADDR); // Choose the PCA9554A
     Wire.write(byte(DIGITAL_IC_OUT));        // Hex adress 0x01 to set outputs (DIO4-DIO7) to 1 or 0
-    Wire.write(byte(state << pin));          // Set the output DIO4 to 1
+    Wire.write(byte(state << pin));          // Set one of the output (DIO4-DIO7) to 1 or 0
     Wire.endTransmission();                  // End I2C connection
 }
 
@@ -150,20 +161,29 @@ void configureAnalogIC()
 }
 
 /* Read the analog channel of the MAX11647 */
-void readAnalogInput()
+unsigned int readAnalogInput(int ANALOG_CH)
 {
-    // TODO: Make this function return the requested value. Figure out how anin0 and anin1 differ.
+  
     unsigned int anin0;
     unsigned int anin1;
 
     // Read MAX11647
-    Wire.requestFrom(ANALOG_IC_ADDR, 4); // Request values from MAX11647 , 4 ByteS
-    anin0 = Wire.read() & 0x03;          // AND values with 0000 0011 Copy values to variable anin0
-    anin0 = anin0 << 8;
-    anin0 = anin0 | Wire.read();
-    anin1 = Wire.read() & 0x03;
-    anin1 = anin1 << 8;
-    anin1 = anin1 | Wire.read();
+    if (ANALOG_CH == 0){
+    Wire.requestFrom(ANALOG_IC_ADDR, 4);    // Request values from MAX11647 , 4 Bytes
+    anin0 = Wire.read() & 0x03;             // AND values with 0000 0011 Copy values to variable anin0
+    anin0 = anin0 << 8;                     // Shift anin0 8 places
+    anin0 = anin0 | Wire.read();            // OR anin1 with data from analog ic
+    return anin0;                           // Return value of anin0
+    }
+
+    if (ANALOG_CH == 1){
+    Wire.requestFrom(ANALOG_IC_ADDR, 4);    // Request values from MAX11647 , 4 Bytes
+    anin1 = Wire.read() & 0x03;             // AND values with 0000 0011 Copy values to variable anin1
+    anin1 = anin1 << 8;                     // Shift anin1 8 places
+    anin1 = anin1 | Wire.read();            // OR anin1 with data from analog ic
+    return anin1;                           // Return value of anin1
+    }
+
 }
 
 void connectWifi()
