@@ -1,3 +1,9 @@
+/*
+  AnalogI.cpp - Library for using analog I ports of the WIB Board.
+  Created by Group 1 PJSDV, December 13, 2021.
+  Released into the public domain.
+*/
+
 #include "AnalogI.h"
 
 

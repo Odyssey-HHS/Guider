@@ -1,3 +1,9 @@
+/*
+  DigitalIO.cpp - Library for using digital IO ports of the WIB Board.
+  Created by Group 1 PJSDV, December 13, 2021.
+  Released into the public domain.
+*/
+
 #include "DigitalIO.h"
 
 DigitalIO::DigitalIO(const int icAddress) : icAddress(icAddress), inAddress(0), outAddress(1)
