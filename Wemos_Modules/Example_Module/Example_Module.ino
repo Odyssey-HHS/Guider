@@ -1,14 +1,14 @@
 /*
  * HHS PJSD 2021
- * 
+ *
  * Groep 1
- * 
+ *
  * Marko Estrada Rodriguez
  * Wouter de Bruijn
  * Casper Bastiaan-Net
  * Maurice Tacx
  * Steven Cowan
- * 
+ *
  * Wemos I/O Server
  *
  * Wemos module connecting to a wifi network and creating a TCP server.
