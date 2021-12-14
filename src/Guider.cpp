@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "ExampleModule.h"
+#include "ModuleAddresses.h"
 #include <thread>
 
 // Declair an instance of the module
@@ -14,7 +15,7 @@ void logic();
 int main(int argc, char const *argv[])
 {
   // Create a new connection to the Wemos board.
-  Client client("172.16.99.100", 8080);
+  Client client(EXAMPLE_MODULE, 8080);
 
   // Create a new module using the connection created above.
   testModule = ExampleModule(client);

@@ -1,10 +1,5 @@
-# Block everything
-*
+.vscode
 
-# Unblock folders
-!*/
-# Unblock everything with an file extention
-!*.*
+src/ModuleAddresses.h
 
 build/
-.vscode
