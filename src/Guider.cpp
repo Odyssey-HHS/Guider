@@ -39,26 +39,8 @@ void fetcher()
 {
   while (1)
   {
-    // Wait for unlock
-    while (door.getLock())
-      ;
-
-    door.lock();
-    // Get the JSON data containing the module outputs.
-    const std::string outputs = door.getOutputsJSON();
-    door.unlock();
-
-    // Write the JSON output data to the wemos module, returning the json input data.
-    const std::string inputs = door.fetch(outputs.c_str());
-
-    // Wait for unlock
-    while (door.getLock())
-      ;
-
-    // Update the door object with the new input data.
-    door.lock();
-    door.setInputsJSON(inputs.c_str());
-    door.unlock();
+    // Sync module
+    door.fetch();
 
     // Sleep for a bit because we only have one module and we don't want to overload it.
     usleep(100000);
@@ -71,8 +53,8 @@ void logic()
   while (1)
   {
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
-    while (door.getLock())
-      ;
+    while (door.getLock());
+    door.lock();
     if (door.getButtonIn())
     {
       door.setDoor(0);
@@ -85,5 +67,6 @@ void logic()
     {
       door.setDoor(65);
     }
+    door.unlock();
   }
 }
