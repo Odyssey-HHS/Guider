@@ -3,58 +3,81 @@
 #include "ExampleModule.h"
 #include <thread>
 
-ExampleModule testMod;
-bool testModLocked = false;
+// Declair an instance of the module
+ExampleModule testModule;
 
+// Declair the two functions used in seperate threads.
+void fetcher();
+void logic();
+
+// The main function, creates the connections to the modules and spins up the threads.
+int main(int argc, char const *argv[])
+{
+  // Create a new connection to the Wemos board.
+  Client client("172.16.99.100", 8080);
+
+  // Create a new module using the connection created above.
+  testModule = ExampleModule(client);
+
+  // Spin up the two threads.
+  std::thread fetcherThread(fetcher);
+  std::thread logicThread(logic);
+
+  // Close down the threads when they are finished.
+  fetcherThread.join();
+  logicThread.join();
+}
+
+/* Updates the module objects syncing them with the wemos hardware. */
 void fetcher()
 {
   while (1)
   {
-    while (testModLocked)
+    // Wait for unlock
+    while (testModule.getLock())
       ;
-    testModLocked = true;
-    const std::string outputs = testMod.getOutputsJSON();
-    testModLocked = false;
 
-    // This takes a "long" time.
-    const std::string inputs = testMod.fetch(outputs.c_str());
+    testModule.lock();
+    // Get the JSON data containing the module outputs.
+    const std::string outputs = testModule.getOutputsJSON();
+    testModule.unlock();
 
-    while (testModLocked)
+    // Write the JSON output data to the wemos module, returning the json input data.
+    const std::string inputs = testModule.fetch(outputs.c_str());
+
+    // Wait for unlock
+    while (testModule.getLock())
       ;
-    testModLocked = true;
-    testMod.setInputsJSON(inputs.c_str());
-    testModLocked = false;
-    usleep(100000); // But of sleep because we only have one module
+
+    // Update the testModule object with the new input data.
+    testModule.lock();
+    testModule.setInputsJSON(inputs.c_str());
+    testModule.unlock();
+
+    // Sleep for a bit because we only have one module and we don't want to overload it.
+    usleep(100000);
   }
 }
 
+/* Execute logic functions, these manipulate the outputs of modules. */
 void logic()
 {
   while (1)
   {
-    while (testModLocked)
+    // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
+    while (testModule.getLock())
       ;
-      if (testMod.buttonIn) {
-        testMod.door = 0;
-      } else if (testMod.buttonOut) {
-        testMod.door = 180;
-      }
-      else {
-        testMod.door = 65;
-      }
+    if (testModule.buttonIn)
+    {
+      testModule.door = 0;
+    }
+    else if (testModule.buttonOut)
+    {
+      testModule.door = 180;
+    }
+    else
+    {
+      testModule.door = 65;
+    }
   }
-}
-
-int main(int argc, char const *argv[])
-{
-  Client client("172.16.99.100", 8080);
-  testMod = ExampleModule(client);
-
-  std::cout << "Up and running!";
-
-  std::thread fetcherThread(fetcher);
-  std::thread logicThread(logic);
-
-  fetcherThread.join();
-  logicThread.join();
 }

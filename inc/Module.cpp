@@ -9,3 +9,18 @@ std::string Module::fetch(const std::string outputJson)
     this->connection.receive(buffer, 256);
     return std::string(buffer);
 }
+
+void Module::lock()
+{
+    this->lockFile = true;
+}
+
+void Module::unlock()
+{
+    this->lockFile = false;
+}
+
+bool Module::getLock()
+{
+    return this->lockFile;
+}
