@@ -47,14 +47,8 @@ void setDigitalOutput(const int pin, const bool state);
 void handleConnections();
 void connectWifi();
 
-struct RGBLed {
-  int red;
-  int green;
-  int blue;
-};
-
 bool pirSensor = false;
-struct RGBLed led = {0, 0, 0};
+int rgb0 = 0;
 
 ArduinoWiFiServer server(PORT);
 CRGB leds[NUM_LEDS];
@@ -90,8 +84,9 @@ void loop()
     int inputData = readDigitalInputs();
 
     pirSensor = inputData == 13;
-    
-    leds[0] = CRGB::Red;
+
+    leds[0] = rgb0; // Write the RGB value to the LED.
+    FastLED.show();
 }
 
 void handleConnections()
@@ -105,9 +100,7 @@ void handleConnections()
 
         StaticJsonDocument<100> jsonIn;
         deserializeJson(jsonIn, s);
-        led.red = jsonIn["rgb0"]["red"];
-        led.green = jsonIn["rgb0"]["green"];
-        led.blue = jsonIn["rgb0"]["blue"];
+        rgb0 = jsonIn["rgb0"];
 
         StaticJsonDocument<100> jsonOut;
         jsonOut["pir"] = pirSensor;

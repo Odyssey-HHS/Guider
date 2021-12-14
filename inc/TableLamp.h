@@ -1,13 +1,6 @@
 #include "Client.h"
 #include "Module.h"
 
-struct RGBLed
-{
-  int red;
-  int green;
-  int blue;
-};
-
 class TableLamp : public Module
 {
 public:
@@ -18,9 +11,9 @@ public:
   std::string getOutputsJSON() const;
 
   bool getPirSensor();
-  TableLamp &setLed(const int red, const int green, const int blue);
+  TableLamp &setLed(const uint8_t red, const uint8_t green, const uint8_t blue);
 
 private:
   bool pirSensor = false;
-  struct RGBLed led = {0, 0, 0};
+  int led = 0;
 };

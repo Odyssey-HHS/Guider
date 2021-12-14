@@ -50,5 +50,15 @@ void logic()
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
     while (tableLamp.getLock())
       ;
+
+    // An simple example, ofcourse sleep can't be used.
+    tableLamp.lock();
+    tableLamp.setLed(255, 0, 0);
+    tableLamp.unlock();
+    sleep(2);
+    tableLamp.lock();
+    tableLamp.setLed(0, 255, 0);
+    tableLamp.unlock();
+    sleep(2);
   }
 }
