@@ -1,11 +1,13 @@
 #include <iostream>
 
-#include "ExampleModule.h"
+//#include "ExampleModule.h"
 #include "ModuleAddresses.h"
+#include "Door.h"
 #include <thread>
 
 // Declair an instance of the module
-ExampleModule testModule;
+//ExampleModule testModule;
+Door door;
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -15,10 +17,13 @@ void logic();
 int main(int argc, char const *argv[])
 {
   // Create a new connection to the Wemos board.
-  Client client(EXAMPLE_MODULE, 8080);
+  //Client client(EXAMPLE_MODULE, 8080);
+  Client doorClient(DOOR_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  testModule = ExampleModule(client);
+  //testModule = ExampleModule(client);
+  door = Door(doorClient);
+  
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -34,8 +39,26 @@ void fetcher()
 {
   while (1)
   {
-    // Synchronize the object with the Wemos module
-    testModule.fetch();
+    // Wait for unlock
+    while (door.getLock())
+      ;
+
+    door.lock();
+    // Get the JSON data containing the module outputs.
+    const std::string outputs = door.getOutputsJSON();
+    door.unlock();
+
+    // Write the JSON output data to the wemos module, returning the json input data.
+    const std::string inputs = door.fetch(outputs.c_str());
+
+    // Wait for unlock
+    while (door.getLock())
+      ;
+
+    // Update the door object with the new input data.
+    door.lock();
+    door.setInputsJSON(inputs.c_str());
+    door.unlock();
 
     // Sleep for a bit because we only have one module and we don't want to overload it.
     usleep(100000);
@@ -48,19 +71,19 @@ void logic()
   while (1)
   {
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
-    while (testModule.getLock())
+    while (door.getLock())
       ;
-    if (testModule.buttonIn)
+    if (door.getButtonIn())
     {
-      testModule.door = 0;
+      door.setDoor(0);
     }
-    else if (testModule.buttonOut)
+    else if (door.getButtonOut())
     {
-      testModule.door = 180;
+      door.setDoor(180);
     }
     else
     {
-      testModule.door = 65;
+      door.setDoor(65);
     }
   }
 }
