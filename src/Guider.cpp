@@ -34,26 +34,8 @@ void fetcher()
 {
   while (1)
   {
-    // Wait for unlock
-    while (testModule.getLock())
-      ;
-
-    testModule.lock();
-    // Get the JSON data containing the module outputs.
-    const std::string outputs = testModule.getOutputsJSON();
-    testModule.unlock();
-
     // Write the JSON output data to the wemos module, returning the json input data.
-    const std::string inputs = testModule.fetch(outputs.c_str());
-
-    // Wait for unlock
-    while (testModule.getLock())
-      ;
-
-    // Update the testModule object with the new input data.
-    testModule.lock();
-    testModule.setInputsJSON(inputs.c_str());
-    testModule.unlock();
+    const std::string inputs = testModule.fetch();
 
     // Sleep for a bit because we only have one module and we don't want to overload it.
     usleep(100000);
