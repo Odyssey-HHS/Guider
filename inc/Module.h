@@ -22,5 +22,5 @@ public:
 
 private:
     Client connection;
-    bool lockFile;
+    bool lockFile = false;
 };
