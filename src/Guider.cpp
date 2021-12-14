@@ -34,8 +34,8 @@ void fetcher()
 {
   while (1)
   {
-    // Sync the object with the Wemos module
-    const std::string inputs = tableLamp.fetch();
+    // Synchronize the object with the Wemos module
+    tableLamp.fetch();
 
     // Sleep for a bit because we only have one module and we don't want to overload it.
     usleep(100000);

@@ -9,7 +9,7 @@ public:
     virtual void setInputsJSON(const std::string json) = 0;
 
     /* Sync this object with the Wemos module. Writes to the outputs and reads from the inputs of the Wemos */
-    std::string fetch();
+    void fetch();
 
     /* Lock this object so other threads wait for an unlock */
     void lock();
