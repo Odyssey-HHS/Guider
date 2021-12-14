@@ -2,7 +2,7 @@
 
 Module::Module(Client client) : connection(client){};
 
-std::string Module::fetch()
+void Module::fetch()
 {
     // Wait for unlock
     while (getLock())

@@ -34,8 +34,8 @@ void fetcher()
 {
   while (1)
   {
-    // Write the JSON output data to the wemos module, returning the json input data.
-    const std::string inputs = testModule.fetch();
+    // Synchronize the object with the Wemos module
+    testModule.fetch();
 
     // Sleep for a bit because we only have one module and we don't want to overload it.
     usleep(100000);
