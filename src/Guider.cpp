@@ -1,11 +1,11 @@
 #include <iostream>
 
-#include "ExampleModule.h"
+#include "TableLamp.h"
 #include "ModuleAddresses.h"
 #include <thread>
 
 // Declair an instance of the module
-ExampleModule testModule;
+TableLamp tableLamp;
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -18,7 +18,7 @@ int main(int argc, char const *argv[])
   Client client(EXAMPLE_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  testModule = ExampleModule(client);
+  tableLamp = TableLamp(client);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -34,8 +34,8 @@ void fetcher()
 {
   while (1)
   {
-    // Write the JSON output data to the wemos module, returning the json input data.
-    const std::string inputs = testModule.fetch();
+    // Sync the object with the Wemos module
+    const std::string inputs = tableLamp.fetch();
 
     // Sleep for a bit because we only have one module and we don't want to overload it.
     usleep(100000);
@@ -48,19 +48,7 @@ void logic()
   while (1)
   {
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
-    while (testModule.getLock())
+    while (tableLamp.getLock())
       ;
-    if (testModule.buttonIn)
-    {
-      testModule.door = 0;
-    }
-    else if (testModule.buttonOut)
-    {
-      testModule.door = 180;
-    }
-    else
-    {
-      testModule.door = 65;
-    }
   }
 }

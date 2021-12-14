@@ -23,7 +23,13 @@ std::string TableLamp::getOutputsJSON() const
 
   rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
 
-  document.AddMember("rgb0", this->led, allocator);
+  rapidjson::Document rgb0;
+  rgb0.SetObject();
+  rgb0.AddMember("red", this->led.red, allocator);
+  rgb0.AddMember("green", this->led.green, allocator);
+  rgb0.AddMember("blue", this->led.blue, allocator);
+
+  document.AddMember("rgb0", rgb0, allocator);
 
   // Stringify object
   rapidjson::StringBuffer buffer;
@@ -32,4 +38,18 @@ std::string TableLamp::getOutputsJSON() const
 
   std::string output = buffer.GetString();
   return output;
+}
+
+bool TableLamp::getPirSensor()
+{
+  return this->pirSensor;
+}
+
+TableLamp &TableLamp::setLed(const int red, const int green, const int blue)
+{
+  this->led.red = red;
+  this->led.green = green;
+  this->led.blue = blue;
+
+  return *this;
 }
