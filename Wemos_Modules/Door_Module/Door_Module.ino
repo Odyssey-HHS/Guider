@@ -78,7 +78,7 @@ void setup()
     server.begin();
     Serial.println("TCP Server started listening...");
 
-    // Serial.end();
+    Serial.end();
 }
 
 void loop()
