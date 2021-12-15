@@ -3,10 +3,10 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-BedModule::BedModule() : Module(Client()) {}
-BedModule::BedModule(Client client) : Module(client) {}
+Bed::Bed() : Module(Client()) {}
+Bed::Bed(Client client) : Module(client) {}
 
-void BedModule::setInputsJSON(const std::string json)
+void Bed::setInputsJSON(const std::string json)
 {
   // 1. Parse a JSON string into DOM.
   rapidjson::Document document;
@@ -17,7 +17,7 @@ void BedModule::setInputsJSON(const std::string json)
   this->DB = document["DBV"].GetInt64();
 }
 
-std::string BedModule::getOutputsJSON() const
+std::string Bed::getOutputsJSON() const
 {
   // Create JSON object.
   rapidjson::Document document;
