@@ -1,5 +1,6 @@
 #include "Client.h"
 #include "Module.h"
+#include <iostream>
 
 class Door : public Module
 {

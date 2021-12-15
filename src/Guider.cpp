@@ -57,11 +57,11 @@ void logic()
     door.lock();
     if (door.getButtonIn())
     {
-      door.setDoor(0);
+      door.setDoor(180).setLedIn(false).setLedOut(false);
     }
     else if (door.getButtonOut())
     {
-      door.setDoor(180);
+      door.setLedIn(true).setLedOut(true);
     }
     else
     {
