@@ -1,11 +1,10 @@
 #include <iostream>
-
-#include "ExampleModule.h"
+#include "Chair.h"
 #include "ModuleAddresses.h"
 #include <thread>
 
 // Declair an instance of the module
-ExampleModule testModule;
+CHAIR Chair;
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -18,7 +17,7 @@ int main(int argc, char const *argv[])
   Client client(EXAMPLE_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  testModule = ExampleModule(client);
+  CHair = Chair(client);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -35,7 +34,7 @@ void fetcher()
   while (1)
   {
     // Synchronize the object with the Wemos module
-    testModule.fetch();
+    CHair.fetch();
 
     // Sleep for a bit because we only have one module and we don't want to overload it.
     usleep(100000);
@@ -47,20 +46,20 @@ void logic()
 {
   while (1)
   {
-    // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
-    while (testModule.getLock())
+    // Example
+    while (CHair.getSwitch())
       ;
-    if (testModule.buttonIn)
-    {
-      testModule.door = 0;
-    }
-    else if (testModule.buttonOut)
-    {
-      testModule.door = 180;
-    }
-    else
-    {
-      testModule.door = 65;
-    }
+
+    // print value force sensor
+    std::cout << "ForceSensor: " << CHair.getFsensor() << "\n";
+
+    // 
+    CHair.lock();
+    CHair.setLed(true);
+    CHair.unlock();
+    sleep(2);
+    CHair.lock();
+    CHair.setMotor(true);
+    CHair.unlock();
   }
 }
