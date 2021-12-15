@@ -51,13 +51,28 @@ void logic()
     while (tableLamp.getLock())
       ;
 
+    // Just as an example
+    std::cout << "PID: " << tableLamp.getPirSensor() << "\n";
+
     // An simple example, ofcourse sleep can't be used.
+    tableLamp.lock();
+    tableLamp.setLed(255, 255, 255);
+    tableLamp.unlock();
+    sleep(2);
     tableLamp.lock();
     tableLamp.setLed(255, 0, 0);
     tableLamp.unlock();
     sleep(2);
     tableLamp.lock();
     tableLamp.setLed(0, 255, 0);
+    tableLamp.unlock();
+    sleep(2);
+    tableLamp.lock();
+    tableLamp.setLed(0, 0, 255);
+    tableLamp.unlock();
+    sleep(2);
+    tableLamp.lock();
+    tableLamp.setLed(0, 0, 0);
     tableLamp.unlock();
     sleep(2);
   }

@@ -39,8 +39,9 @@ bool TableLamp::getPirSensor()
   return this->pirSensor;
 }
 
-TableLamp &TableLamp::setLed(const uint8_t red, const uint8_t green, const uint8_t blue)
+TableLamp &TableLamp::setLed(const int red, const int green, const int blue)
 {
-  this->led = red << 4 + green << 2 + blue;
+
+  this->led = (green << 16) + (red << 8) + blue;
   return *this;
 }

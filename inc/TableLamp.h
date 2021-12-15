@@ -11,7 +11,7 @@ public:
   std::string getOutputsJSON() const;
 
   bool getPirSensor();
-  TableLamp &setLed(const uint8_t red, const uint8_t green, const uint8_t blue);
+  TableLamp &setLed(const int red, const int green, const int blue);
 
 private:
   bool pirSensor = false;
