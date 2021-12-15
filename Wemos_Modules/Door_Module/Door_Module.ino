@@ -88,8 +88,8 @@ void loop()
 
     int inputData = readDigitalInputs();
 
-    buttonOutside = inputData == 13;
-    buttonInside = inputData == 14;
+    buttonOutside = inputData & (1 << 0);
+    buttonInside = inputData & (1 << 1);
 
     setDigitalOutput((ledInside << 5) | (ledOutside << 4));
 
