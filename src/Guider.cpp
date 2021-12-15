@@ -6,7 +6,7 @@
 #include <thread>
 
 // Declair an instance of the module
-//ExampleModule testModule;
+// ExampleModule testModule;
 Door door;
 
 // Declair the two functions used in seperate threads.
@@ -17,13 +17,12 @@ void logic();
 int main(int argc, char const *argv[])
 {
   // Create a new connection to the Wemos board.
-  //Client client(EXAMPLE_MODULE, 8080);
+  // Client client(EXAMPLE_MODULE, 8080);
   Client doorClient(DOOR_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  //testModule = ExampleModule(client);
+  // testModule = ExampleModule(client);
   door = Door(doorClient);
-  
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -53,7 +52,8 @@ void logic()
   while (1)
   {
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
-    while (door.getLock());
+    while (door.getLock())
+      ;
     door.lock();
     if (door.getButtonIn())
     {

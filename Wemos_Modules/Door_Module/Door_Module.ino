@@ -78,7 +78,7 @@ void setup()
     server.begin();
     Serial.println("TCP Server started listening...");
 
-    //Serial.end();
+    // Serial.end();
 }
 
 void loop()
@@ -138,7 +138,7 @@ void setDigitalOutput(byte digitalBuffer)
 {
     Wire.beginTransmission(DIGITAL_IC_ADDR); // Choose the PCA9554A
     Wire.write(byte(DIGITAL_IC_OUT));        // Hex adress 0x01 to set outputs (DIO4-DIO7) to 1 or 0
-    Wire.write(digitalBuffer);          // Set one of the output (DIO4-DIO7) to 1 or 0
+    Wire.write(digitalBuffer);               // Set one of the output (DIO4-DIO7) to 1 or 0
     Wire.endTransmission();                  // End I2C connection
 }
 
@@ -163,7 +163,6 @@ void configureAnalogIC()
 /* Read the analog channel of the MAX11647 */
 unsigned int readAnalogInput(int ANALOG_CH)
 {
-
     unsigned int anin0;
     unsigned int anin1;
 
