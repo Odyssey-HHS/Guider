@@ -40,7 +40,7 @@ void configureDigitalIC();
 void configureAnalogIC();
 
 unsigned int readDigitalInputs();
-void setDigitalOutput(const int pin, const bool state);
+void setDigitalOutput(byte digitalBuffer);
 
 void readAnalogInput();
 void handleConnections();
@@ -87,11 +87,10 @@ void loop()
 
     int inputData = readDigitalInputs();
 
-    buttonOutside = inputData == 13;
-    buttonInside = inputData == 14;
+    buttonOutside = inputData & 1;
+    buttonInside = inputData & (1 << 1);
 
-    setDigitalOutput(4, ledInside);
-    setDigitalOutput(5, ledOutside);
+    setDigitalOutput((ledInside << 5) | (ledOutside << 4));
 
     doorServo.write(door);
 }
@@ -134,11 +133,11 @@ unsigned int readDigitalInputs()
 }
 
 /* Set PCA9554 outputs (DIO4-DIO7) */
-void setDigitalOutput(int pin, bool state)
+void setDigitalOutput(byte digitalBuffer)
 {
     Wire.beginTransmission(DIGITAL_IC_ADDR); // Choose the PCA9554A
     Wire.write(byte(DIGITAL_IC_OUT));        // Hex adress 0x01 to set outputs (DIO4-DIO7) to 1 or 0
-    Wire.write(byte(state << pin));          // Set one of the output (DIO4-DIO7) to 1 or 0
+    Wire.write(digitalBuffer);               // Set one of the output (DIO4-DIO7) to 1 or 0
     Wire.endTransmission();                  // End I2C connection
 }
 
