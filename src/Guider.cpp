@@ -1,6 +1,6 @@
 #include <iostream>
-
-//#include "ExampleModule.h"
+#include <ctime>
+#include <chrono>
 #include "ModuleAddresses.h"
 #include "Door.h"
 #include <thread>
@@ -46,11 +46,18 @@ void fetcher()
   }
 }
 
+    std::time_t current;
+    std::time_t doorLightTime;
+
+
 /* Execute logic functions, these manipulate the outputs of modules. */
 void logic()
 {
   while (1)
   {
+    current = std::time(nullptr);
+    struct tm *tm_struct = localtime(&current);
+
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
     while (door.getLock())
       ;
@@ -58,14 +65,22 @@ void logic()
     if (door.getButtonIn())
     {
       door.setDoor(180).setLedIn(false).setLedOut(false);
+      doorLightTime = std::time(nullptr);
+
     }
     else if (door.getButtonOut())
     {
-      door.setLedIn(true).setLedOut(true);
-    }
+      if (!(localtime(&current)->tm_hour >= 19 | localtime(&current)->tm_hour <= 6)) {
+        door.setLedIn(true).setLedOut(true);
+        doorLightTime = std::time(nullptr)+60;
+      }
+    } 
     else
     {
       door.setDoor(65);
+    }
+    if (current >= doorLightTime) {
+      door.setLedIn(false).setLedOut(false);
     }
     door.unlock();
   }
