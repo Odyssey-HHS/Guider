@@ -2,6 +2,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include <iostream>
 
 Bed::Bed() : Module(Client()) {}
 Bed::Bed(Client client) : Module(client) {}
@@ -12,9 +13,9 @@ void Bed::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  this->Led = document["Led"].GetBool();
-  this->Switch = document["Sw"].GetBool();
-  this->DS = document["DS"].GetInt64();
+  this->sw = document["Sw"].GetBool();
+  //std::cout<<json<<std::endl;
+  this->ps = document["PS"].GetInt64();
 }
 
 std::string Bed::getOutputsJSON() const
@@ -25,9 +26,7 @@ std::string Bed::getOutputsJSON() const
 
   rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
 
-  document.AddMember("Led", this->Led, allocator);
-  document.AddMember("Swicht", this->Switch, allocator);
-  document.AddMember("DS", this->DS, allocator);
+  document.AddMember("Led", this->led, allocator);
 
   // Stringify object
   rapidjson::StringBuffer buffer;

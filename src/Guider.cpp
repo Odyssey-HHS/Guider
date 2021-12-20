@@ -1,11 +1,11 @@
 #include <iostream>
 
-#include "ExampleModule.h"
+#include "Bed.h"
 #include "ModuleAddresses.h"
 #include <thread>
 
 // Declair an instance of the module
-ExampleModule testModule;
+Bed testModule;
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -18,7 +18,7 @@ int main(int argc, char const *argv[])
   Client client(EXAMPLE_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  testModule = ExampleModule(client);
+  testModule = Bed(client);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -49,18 +49,15 @@ void logic()
   {
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
     while (testModule.getLock())
-      ;
-    if (testModule.buttonIn)
+    ;
+    if (testModule.getps()>=100)
     {
-      testModule.door = 0;
-    }
-    else if (testModule.buttonOut)
-    {
-      testModule.door = 180;
-    }
-    else
-    {
-      testModule.door = 65;
+      if (testModule.getsw()==1)
+      {
+        testModule.setled(1);
+      }
+      // usleep(1000);
+      // testModule.setled(0);
     }
   }
 }
