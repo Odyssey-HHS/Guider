@@ -6,10 +6,15 @@
 #include "ModuleAddresses.h"
 #include "Door.h"
 #include "TableLamp.h"
+#include <thread>
+#include "Timer.h"
 
 // Declair an instance of the module
 TableLamp tableLamp;
 Door door;
+
+Timer doorLightTimer = Timer(5);
+Timer tableLampTimer = Timer(15);
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -21,7 +26,6 @@ int main(int argc, char const *argv[])
   // Create a new connection to the Wemos board.
   Client lampClient(LAMP_MODULE, 8080);
   Client doorClient(DOOR_MODULE, 8080);
-
   // Create a new module using the connection created above.
   tableLamp = TableLamp(lampClient);
   door = Door(doorClient);
@@ -42,75 +46,58 @@ void fetcher()
   {
     // Synchronize the object with the Wemos module
     tableLamp.fetch();
-    // Sync module
     door.fetch();
 
-    // Sleep for a bit because we only have one module and we don't want to overload it.
+    // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
   }
 }
-
-    std::time_t current;
-    std::time_t doorLightTime;
-
 
 /* Execute logic functions, these manipulate the outputs of modules. */
 void logic()
 {
   while (1)
   {
-    current = std::time(nullptr);
-    struct tm *tm_struct = localtime(&current);
+    std::time_t current = std::time(nullptr);
 
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
     while (tableLamp.getLock())
       ;
+    if (tableLamp.getPirSensor())
+    {
+      tableLamp.setLed(255, 255, 255);
+      tableLampTimer.start();
+    }
 
-    // Just as an example
-    std::cout << "PID: " << tableLamp.getPirSensor() << "\n";
+    if (tableLampTimer.finished())
+    {
+      tableLamp.setLed(0, 0, 0);
+    }
 
-    // An simple example, ofcourse sleep can't be used.
-    tableLamp.lock();
-    tableLamp.setLed(255, 255, 255);
-    tableLamp.unlock();
-    sleep(2);
-    tableLamp.lock();
-    tableLamp.setLed(255, 0, 0);
-    tableLamp.unlock();
-    sleep(2);
-    tableLamp.lock();
-    tableLamp.setLed(0, 255, 0);
-    tableLamp.unlock();
-    sleep(2);
-    tableLamp.lock();
-    tableLamp.setLed(0, 0, 255);
-    tableLamp.unlock();
-    sleep(2);
-    tableLamp.lock();
-    tableLamp.setLed(0, 0, 0);
-    tableLamp.unlock();
-    sleep(2);
+    // (Demo door logic)
     while (door.getLock())
       ;
+
     door.lock();
     if (door.getButtonIn())
     {
       door.setDoor(180).setLedIn(false).setLedOut(false);
-      doorLightTime = std::time(nullptr);
-
+      doorLightTimer.stop();
     }
     else if (door.getButtonOut())
     {
-      if (!(localtime(&current)->tm_hour >= 19 | localtime(&current)->tm_hour <= 6)) {
+      if (!(localtime(&current)->tm_hour >= 19 | localtime(&current)->tm_hour <= 6))
+      {
         door.setLedIn(true).setLedOut(true);
-        doorLightTime = std::time(nullptr)+60;
+        doorLightTimer.start();
       }
-    } 
+    }
     else
     {
       door.setDoor(65);
     }
-    if (current >= doorLightTime) {
+    if (doorLightTimer.finished())
+    {
       door.setLedIn(false).setLedOut(false);
     }
     door.unlock();
