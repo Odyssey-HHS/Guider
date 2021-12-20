@@ -12,8 +12,8 @@
 
 // Declair an instance of the module
 Bed bed;
-TableLamp tableLamp;
-Door door;
+//TableLamp tableLamp;
+//Door door;
 
 //Timer doorLightTimer = Timer(5);
 //Timer tableLampTimer = Timer(2);
@@ -26,6 +26,7 @@ void logic();
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
+  
   // Create a new connection to the Wemos board.
   Client bedClient(BED_MODULE, 8080);
  // Client lampClient(LAMP_MODULE, 8080);
@@ -53,10 +54,11 @@ void fetcher()
     // Synchronize the object with the Wemos module
     //tableLamp.fetch();
     //door.fetch();
+    bed.fetch();
 
     // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
-    std::cout << "Fetching round...\n";
+    //std::cout << "Fetching round...\n";
   }
 }
 
@@ -72,15 +74,26 @@ void logic()
     ;
     if (bed.getps()>=100)
     {
-      if (bed.getsw()==1)
+      bed.swp = bed.swc;
+            
+      if(bed.getsw()==1)
       {
-        bed.setled(1);
+        bed.swc = bed.getsw();
+      }
+      if(bed.getsw()==0)
+      {
+        bed.swc = bed.getsw();
+      }
+      if(bed.swc == 0 && bed.swp == 1)
+      {
+        bed.setled(!bed.getLed());
         bedTimer.start();
       }
-      if(bedTimer.finished()&&(bed.getsw()==0))
+      if(bedTimer.finished())
       {
         bed.setled(0);
       }
+    }
       // usleep(1000);
       // testModule.setled(0);
     /*while (tableLamp.getLock())
@@ -128,7 +141,8 @@ void logic()
       door.setLedIn(false).setLedOut(false);
     }
     door.unlock();
-    tableLamp.unlock();
-  }*/
-  }
+    tableLamp.unlock();*/
+  
+  
+}
 }

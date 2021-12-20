@@ -8,10 +8,7 @@ target_link_libraries(Guider PUBLIC Server)
 target_link_libraries(Guider PUBLIC Client)
 target_link_libraries(Guider PUBLIC Module)
 target_link_libraries(Guider PUBLIC ExampleModule)
-<<<<<<< HEAD
 target_link_libraries(Guider PUBLIC Bed)
-=======
 target_link_libraries(Guider PUBLIC TableLamp)
 target_link_libraries(Guider PUBLIC Door)
 target_link_libraries(Guider PUBLIC Timer)
->>>>>>> main
