@@ -1,3 +1,5 @@
+#include "Timer.h"
+
 class Timer 
 {
     Timer::Timer(int stdDuration): duration(stdDuration);

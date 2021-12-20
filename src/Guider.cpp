@@ -6,10 +6,14 @@
 #include "ModuleAddresses.h"
 #include "Door.h"
 #include "TableLamp.h"
+#include <thread>
+#include "Timer.h"
 
 // Declair an instance of the module
 TableLamp tableLamp;
 Door door;
+
+Timer doorLightTimer = Timer(60);
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -51,16 +55,12 @@ void fetcher()
 }
 
     std::time_t current;
-    std::time_t doorLightTime;
-
 
 /* Execute logic functions, these manipulate the outputs of modules. */
 void logic()
 {
   while (1)
   {
-    current = std::time(nullptr);
-    struct tm *tm_struct = localtime(&current);
 
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
     while (tableLamp.getLock())
@@ -96,21 +96,21 @@ void logic()
     if (door.getButtonIn())
     {
       door.setDoor(180).setLedIn(false).setLedOut(false);
-      doorLightTime = std::time(nullptr);
+      doorLightTimer.stop();
 
     }
     else if (door.getButtonOut())
     {
       if (!(localtime(&current)->tm_hour >= 19 | localtime(&current)->tm_hour <= 6)) {
         door.setLedIn(true).setLedOut(true);
-        doorLightTime = std::time(nullptr)+60;
+        doorLightTimer.start();
       }
     } 
     else
     {
       door.setDoor(65);
     }
-    if (current >= doorLightTime) {
+    if (doorLightTimer.finished()) {
       door.setLedIn(false).setLedOut(false);
     }
     door.unlock();

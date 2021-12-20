@@ -1,5 +1,7 @@
-#ifndef TIMER_C
-#define TIMER_C
+#ifndef TIMER_H
+#define TIMER_H
+
+#include <ctime>
 
 class Timer 
 {
