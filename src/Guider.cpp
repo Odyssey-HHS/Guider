@@ -6,7 +6,6 @@
 #include "ModuleAddresses.h"
 #include "Door.h"
 #include "TableLamp.h"
-#include <thread>
 #include "Timer.h"
 
 // Declair an instance of the module

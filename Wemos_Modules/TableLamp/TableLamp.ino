@@ -83,8 +83,8 @@ void loop()
 
   pirSensor = inputData == 15;
 
-
-  if (rgb0history != rgb0) {
+  if (rgb0history != rgb0)
+  {
     pixels.setPixelColor(0, rgb0);
     pixels.show();
     rgb0history = rgb0;

@@ -1,6 +1,7 @@
 #include "Client.h"
 
-Client::Client() {
+Client::Client()
+{
   connectedSocket_fd = -1;
 }
 
