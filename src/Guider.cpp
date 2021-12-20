@@ -13,7 +13,7 @@
 TableLamp tableLamp;
 Door door;
 
-Timer doorLightTimer = Timer(60);
+Timer doorLightTimer = Timer(5);
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -23,11 +23,12 @@ void logic();
 int main(int argc, char const *argv[])
 {
   // Create a new connection to the Wemos board.
-  Client lampClient(LAMP_MODULE, 8080);
+  //Client lampClient(LAMP_MODULE, 8080);
+  std::cout<<"attempting connection"<<std::endl;
   Client doorClient(DOOR_MODULE, 8080);
-
+  std::cout<<"connected"<<std::endl;
   // Create a new module using the connection created above.
-  tableLamp = TableLamp(lampClient);
+  //tableLamp = TableLamp(lampClient);
   door = Door(doorClient);
 
   // Spin up the two threads.
@@ -73,23 +74,23 @@ void logic()
     tableLamp.lock();
     tableLamp.setLed(255, 255, 255);
     tableLamp.unlock();
-    sleep(2);
+    //sleep(2);
     tableLamp.lock();
     tableLamp.setLed(255, 0, 0);
     tableLamp.unlock();
-    sleep(2);
+    //sleep(2);
     tableLamp.lock();
     tableLamp.setLed(0, 255, 0);
     tableLamp.unlock();
-    sleep(2);
+    //sleep(2);
     tableLamp.lock();
     tableLamp.setLed(0, 0, 255);
     tableLamp.unlock();
-    sleep(2);
+    //sleep(2);
     tableLamp.lock();
     tableLamp.setLed(0, 0, 0);
     tableLamp.unlock();
-    sleep(2);
+    //sleep(2);
     while (door.getLock())
       ;
     door.lock();
