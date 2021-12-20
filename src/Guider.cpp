@@ -1,23 +1,35 @@
+#define DASHBOARD_PORT
+
 #include <iostream>
 #include <ctime>
 #include <chrono>
 #include <thread>
 
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+
+#include "Server.h"
 #include "ModuleAddresses.h"
 #include "Door.h"
 #include "TableLamp.h"
 #include "Timer.h"
 
+// Declair dashboard server
+Server server(8000);
+
 // Declair an instance of the module
 TableLamp tableLamp;
 Door door;
 
+// Declair timers
 Timer doorLightTimer = Timer(5);
 Timer tableLampTimer = Timer(2);
 
-// Declair the two functions used in seperate threads.
+// Declair the functions used in seperate threads.
 void fetcher();
 void logic();
+void dashboard();
 
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
@@ -33,15 +45,18 @@ int main(int argc, char const *argv[])
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
   std::thread logicThread(logic);
+  std::thread dashboardThread(dashboard);
 
   // Close down the threads when they are finished.
   fetcherThread.join();
   logicThread.join();
+  dashboardThread.join();
 }
 
 /* Updates the module objects syncing them with the wemos hardware. */
 void fetcher()
 {
+  return;
   while (1)
   {
     // Synchronize the object with the Wemos module
@@ -102,12 +117,67 @@ void logic()
     {
       door.setDoor(65);
     }
-    
+
     if (doorLightTimer.finished())
     {
       door.setLedIn(false).setLedOut(false);
     }
     door.unlock();
     tableLamp.unlock();
+  }
+}
+
+void dashboard()
+{
+  while (1)
+  {
+    // Wait for client (blocking)
+    int socket_fd = server.awaitClient();
+
+    int receiveStatus = 0;
+
+    // Disconnect after message failure.
+    while (receiveStatus < 0)
+    {
+      // Wait for message (blocking)
+      char buffer[4096] = {0};
+      receiveStatus = server.receive(socket_fd, buffer, 4096);
+
+      // Parse a JSON string into DOM.
+      rapidjson::Document document;
+      document.Parse(buffer);
+
+      std::string moduleHeader = document["module"].GetString();
+      Module *module = nullptr;
+
+      if (moduleHeader.compare("light"))
+      {
+        module = &tableLamp;
+      }
+
+      if (moduleHeader.compare("door"))
+      {
+        module = &door;
+      }
+
+      while (module->getLock())
+        ;
+      ;
+
+      module->lock();
+
+      // TODO: @Wouter @Casper The setInputsJSON function needs to check if a value is given and then read it. The dashboard can't write the whole object because it might be old data and that would cause problems.
+
+      module->setInputsJSON(buffer); // Set the inputs to dashboard values
+      // module->setOutputsJSON(buffer); // Set the outputs to dashboard values
+
+      module->unlock();
+
+      std::cout << "Recieved!  " << buffer << "\n";
+    }
+
+    close(socket_fd);
+
+    receiveStatus = 0;
   }
 }

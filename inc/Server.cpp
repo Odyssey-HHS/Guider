@@ -1,10 +1,15 @@
 #include "Server.h"
 
-Server::Server()
+Server::Server(const int port)
 {
   int server_fd = createSocket();
-  attachSocket(server_fd, 8000);
+  attachSocket(server_fd, port);
   listenSocket(server_fd);
+}
+
+Server::Server()
+{
+  Server(8000);
 }
 
 int Server::createSocket()
