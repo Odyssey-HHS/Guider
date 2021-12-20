@@ -14,7 +14,7 @@ TableLamp tableLamp;
 Door door;
 
 Timer doorLightTimer = Timer(5);
-Timer tableLampTimer = Timer(15);
+Timer tableLampTimer = Timer(2);
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -26,6 +26,7 @@ int main(int argc, char const *argv[])
   // Create a new connection to the Wemos board.
   Client lampClient(LAMP_MODULE, 8080);
   Client doorClient(DOOR_MODULE, 8080);
+
   // Create a new module using the connection created above.
   tableLamp = TableLamp(lampClient);
   door = Door(doorClient);
@@ -50,6 +51,7 @@ void fetcher()
 
     // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
+    std::cout << "Fetching round...\n";
   }
 }
 
@@ -63,6 +65,7 @@ void logic()
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
     while (tableLamp.getLock())
       ;
+    tableLamp.lock();
     if (tableLamp.getPirSensor())
     {
       tableLamp.setLed(255, 255, 255);
@@ -73,12 +76,14 @@ void logic()
     {
       tableLamp.setLed(0, 0, 0);
     }
+    tableLamp.unlock();
 
     // (Demo door logic)
-    while (door.getLock())
+    while (door.getLock() && tableLamp.getLock())
       ;
 
     door.lock();
+    tableLamp.lock();
     if (door.getButtonIn())
     {
       door.setDoor(180).setLedIn(false).setLedOut(false);
@@ -90,6 +95,8 @@ void logic()
       {
         door.setLedIn(true).setLedOut(true);
         doorLightTimer.start();
+        tableLamp.setLed(255, 0, 0);
+        tableLampTimer.start();
       }
     }
     else
@@ -101,5 +108,6 @@ void logic()
       door.setLedIn(false).setLedOut(false);
     }
     door.unlock();
+    tableLamp.unlock();
   }
 }

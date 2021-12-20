@@ -42,6 +42,6 @@ bool TableLamp::getPirSensor()
 TableLamp &TableLamp::setLed(const int red, const int green, const int blue)
 {
 
-  this->led = (green << 16) + (red << 8) + blue;
+  this->led = (red << 16) + (green << 8) + blue;
   return *this;
 }
