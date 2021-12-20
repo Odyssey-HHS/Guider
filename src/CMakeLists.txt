@@ -9,4 +9,4 @@ target_link_libraries(Guider PUBLIC Client)
 target_link_libraries(Guider PUBLIC Module)
 target_link_libraries(Guider PUBLIC ExampleModule)
 target_link_libraries(Guider PUBLIC TableLamp)
-
+target_link_libraries(Guider PUBLIC Door)
