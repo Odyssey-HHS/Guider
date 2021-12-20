@@ -1,0 +1,2 @@
+#define DOOR_MODULE "172.16.99.100"
+#define LAMP_MODULE "172.16.99.101"

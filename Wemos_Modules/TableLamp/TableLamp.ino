@@ -15,47 +15,43 @@
  * Can receive TCP server commands to set or get data.
  * Can use IO from WIB Board
  *
- * NOTE: using library ArduinoJson 6.18.5
+ * NOTE:  using library ArduinoJson 6.18.5
+ *        using FastLED 3.4.0
  */
 
 #include <Wire.h>
-#include <Servo.h>
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <ArduinoWiFiServer.h>
+#include <FastLED.h>
 
-#define WIFI_SSID "G41C control node"
-#define WIFI_PASSWD "g41cstandsforgalc"
+#define WIFI_SSID "3.1415"
+#define WIFI_PASSWD "YouShallNotPassword"
 #define PORT 8080
-#define ANALOG_IC_ADDR 0x36
 #define DIGITAL_IC_ADDR 0x38
 #define DIGITAL_IC_IN 0x00
 #define DIGITAL_IC_OUT 0x01
 
-/*const IPAddress local_IP(172, 16, 99, 100);
+#define NUM_LEDS 1
+#define DATA_PIN D5
+
+const IPAddress local_IP(172, 16, 99, 100);
 const IPAddress gateway(172, 16, 99, 1);
-const IPAddress subnet(255, 255, 255, 0);*/
+const IPAddress subnet(255, 255, 255, 0);
 
 void configureDigitalIC();
-void configureAnalogIC();
 
 unsigned int readDigitalInputs();
-void setDigitalOutput(byte digitalBuffer);
+void setDigitalOutput(const int pin, const bool state);
 
-void readAnalogInputs(const int ANALOG_CH, unsigned int *analog1, unsigned int *analog2);
 void handleConnections();
 void connectWifi();
 
-Servo doorServo;
-
-bool buttonOutside = false;
-bool buttonInside = false;
-bool ledInside = false;
-bool ledOutside = false;
-int door = 0;
-byte digitalBuffer = 0;
+bool pirSensor = false;
+int rgb0 = 0;
 
 ArduinoWiFiServer server(PORT);
+CRGB leds[NUM_LEDS];
 
 void setup()
 {
@@ -68,17 +64,16 @@ void setup()
 
     delay(1000);
 
-    // Use pin d5 as servo output
-    doorServo.attach(D5);
-    pinMode(D5, OUTPUT);
-
     configureDigitalIC();
+
+    // Configure the LED strip
+    FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, NUM_LEDS);
 
     // Start TCP Server
     server.begin();
     Serial.println("TCP Server started listening...");
 
-    //Serial.end();
+    Serial.end();
 }
 
 void loop()
@@ -88,13 +83,10 @@ void loop()
 
     int inputData = readDigitalInputs();
 
-    buttonOutside = inputData & (1 << 0);
+    pirSensor = inputData == 13;
 
-    buttonInside = inputData & (1 << 1);
-
-    setDigitalOutput((ledInside << 5) | (ledOutside << 4));
-
-    doorServo.write(door);
+    leds[0] = rgb0; // Write the RGB value to the LED.
+    FastLED.show();
 }
 
 void handleConnections()
@@ -108,13 +100,10 @@ void handleConnections()
 
         StaticJsonDocument<100> jsonIn;
         deserializeJson(jsonIn, s);
-        door = jsonIn["door"];
-        ledInside = jsonIn["ledI"];
-        ledOutside = jsonIn["ledO"];
+        rgb0 = jsonIn["rgb0"];
 
         StaticJsonDocument<100> jsonOut;
-        jsonOut["btnO"] = buttonOutside;
-        jsonOut["btnI"] = buttonInside;
+        jsonOut["pir"] = pirSensor;
 
         String output;
         serializeJson(jsonOut, output);
@@ -135,11 +124,11 @@ unsigned int readDigitalInputs()
 }
 
 /* Set PCA9554 outputs (DIO4-DIO7) */
-void setDigitalOutput(byte digitalBuffer)
+void setDigitalOutput(int pin, bool state)
 {
     Wire.beginTransmission(DIGITAL_IC_ADDR); // Choose the PCA9554A
     Wire.write(byte(DIGITAL_IC_OUT));        // Hex adress 0x01 to set outputs (DIO4-DIO7) to 1 or 0
-    Wire.write(digitalBuffer);               // Set one of the output (DIO4-DIO7) to 1 or 0
+    Wire.write(byte(state << pin));          // Set one of the output (DIO4-DIO7) to 1 or 0
     Wire.endTransmission();                  // End I2C connection
 }
 
@@ -152,37 +141,16 @@ void configureDigitalIC()
     Wire.endTransmission();                  // End I2C connection
 }
 
-/* Config MAX11647 Analog inputs */
-void configureAnalogIC()
-{
-    Wire.beginTransmission(ANALOG_IC_ADDR); // Choose the MAX11647
-    Wire.write(byte(0xA2));                 // set-up byte
-    Wire.write(byte(0x03));                 // configuration byte
-    Wire.endTransmission();                 // End I2C connection
-}
-
-/* Read the analog channels of the MAX11647 */
-void readAnalogInputs(const int ANALOG_CH, unsigned int *analog1, unsigned int *analog2)
-{
-    Wire.requestFrom(ANALOG_CH, 4);
-    *analog1 = Wire.read() & 0x03;
-    *analog1 = *analog1 << 8;
-    *analog1 = *analog1 | Wire.read();
-    *analog2 = Wire.read() & 0x03;
-    *analog2 = *analog2 << 8;
-    *analog2 = *analog2 | Wire.read();
-}
-
 void connectWifi()
 {
     Serial.print("Connecting to ");
     Serial.println(WIFI_SSID);
 
     // Configure static IP.
-    /*if (!WiFi.config(local_IP, gateway, subnet))
+    if (!WiFi.config(local_IP, gateway, subnet))
     {
         Serial.println("STA Failed to configure");
-    }*/
+    }
 
     // Start connecting to the WiFi
     WiFi.begin(WIFI_SSID, WIFI_PASSWD);

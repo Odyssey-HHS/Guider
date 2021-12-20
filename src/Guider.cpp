@@ -1,11 +1,15 @@
 #include <iostream>
-
-#include "ExampleModule.h"
-#include "ModuleAddresses.h"
+#include <ctime>
+#include <chrono>
 #include <thread>
 
+#include "ModuleAddresses.h"
+#include "Door.h"
+#include "TableLamp.h"
+
 // Declair an instance of the module
-ExampleModule testModule;
+TableLamp tableLamp;
+Door door;
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -15,10 +19,12 @@ void logic();
 int main(int argc, char const *argv[])
 {
   // Create a new connection to the Wemos board.
-  Client client(EXAMPLE_MODULE, 8080);
+  Client lampClient(LAMP_MODULE, 8080);
+  Client doorClient(DOOR_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  testModule = ExampleModule(client);
+  tableLamp = TableLamp(lampClient);
+  door = Door(doorClient);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -34,51 +40,79 @@ void fetcher()
 {
   while (1)
   {
-    // Wait for unlock
-    while (testModule.getLock())
-      ;
-
-    testModule.lock();
-    // Get the JSON data containing the module outputs.
-    const std::string outputs = testModule.getOutputsJSON();
-    testModule.unlock();
-
-    // Write the JSON output data to the wemos module, returning the json input data.
-    const std::string inputs = testModule.fetch(outputs.c_str());
-
-    // Wait for unlock
-    while (testModule.getLock())
-      ;
-
-    // Update the testModule object with the new input data.
-    testModule.lock();
-    testModule.setInputsJSON(inputs.c_str());
-    testModule.unlock();
+    // Synchronize the object with the Wemos module
+    tableLamp.fetch();
+    // Sync module
+    door.fetch();
 
     // Sleep for a bit because we only have one module and we don't want to overload it.
     usleep(100000);
   }
 }
 
+    std::time_t current;
+    std::time_t doorLightTime;
+
+
 /* Execute logic functions, these manipulate the outputs of modules. */
 void logic()
 {
   while (1)
   {
+    current = std::time(nullptr);
+    struct tm *tm_struct = localtime(&current);
+
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
-    while (testModule.getLock())
+    while (tableLamp.getLock())
       ;
-    if (testModule.buttonIn)
+
+    // Just as an example
+    std::cout << "PID: " << tableLamp.getPirSensor() << "\n";
+
+    // An simple example, ofcourse sleep can't be used.
+    tableLamp.lock();
+    tableLamp.setLed(255, 255, 255);
+    tableLamp.unlock();
+    sleep(2);
+    tableLamp.lock();
+    tableLamp.setLed(255, 0, 0);
+    tableLamp.unlock();
+    sleep(2);
+    tableLamp.lock();
+    tableLamp.setLed(0, 255, 0);
+    tableLamp.unlock();
+    sleep(2);
+    tableLamp.lock();
+    tableLamp.setLed(0, 0, 255);
+    tableLamp.unlock();
+    sleep(2);
+    tableLamp.lock();
+    tableLamp.setLed(0, 0, 0);
+    tableLamp.unlock();
+    sleep(2);
+    while (door.getLock())
+      ;
+    door.lock();
+    if (door.getButtonIn())
     {
-      testModule.door = 0;
+      door.setDoor(180).setLedIn(false).setLedOut(false);
+      doorLightTime = std::time(nullptr);
+
     }
-    else if (testModule.buttonOut)
+    else if (door.getButtonOut())
     {
-      testModule.door = 180;
-    }
+      if (!(localtime(&current)->tm_hour >= 19 | localtime(&current)->tm_hour <= 6)) {
+        door.setLedIn(true).setLedOut(true);
+        doorLightTime = std::time(nullptr)+60;
+      }
+    } 
     else
     {
-      testModule.door = 65;
+      door.setDoor(65);
     }
+    if (current >= doorLightTime) {
+      door.setLedIn(false).setLedOut(false);
+    }
+    door.unlock();
   }
 }
