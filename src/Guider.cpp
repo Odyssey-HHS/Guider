@@ -1,11 +1,22 @@
 #include <iostream>
+#include <ctime>
+#include <chrono>
+#include <thread>
 
 #include "Bed.h"
 #include "ModuleAddresses.h"
+#include "Door.h"
+#include "TableLamp.h"
 #include <thread>
+#include "Timer.h"
 
 // Declair an instance of the module
 Bed testModule;
+TableLamp tableLamp;
+Door door;
+
+Timer doorLightTimer = Timer(5);
+Timer tableLampTimer = Timer(2);
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -15,10 +26,13 @@ void logic();
 int main(int argc, char const *argv[])
 {
   // Create a new connection to the Wemos board.
-  Client client(EXAMPLE_MODULE, 8080);
+  Client lampClient(LAMP_MODULE, 8080);
+  Client doorClient(DOOR_MODULE, 8080);
 
   // Create a new module using the connection created above.
   testModule = Bed(client);
+  tableLamp = TableLamp(lampClient);
+  door = Door(doorClient);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -35,10 +49,12 @@ void fetcher()
   while (1)
   {
     // Synchronize the object with the Wemos module
-    testModule.fetch();
+    tableLamp.fetch();
+    door.fetch();
 
-    // Sleep for a bit because we only have one module and we don't want to overload it.
+    // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
+    std::cout << "Fetching round...\n";
   }
 }
 
@@ -47,6 +63,8 @@ void logic()
 {
   while (1)
   {
+    std::time_t current = std::time(nullptr);
+
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
     while (testModule.getLock())
     ;
@@ -58,6 +76,51 @@ void logic()
       }
       // usleep(1000);
       // testModule.setled(0);
+    while (tableLamp.getLock())
+      ;
+    tableLamp.lock();
+    if (tableLamp.getPirSensor())
+    {
+      tableLamp.setLed(255, 255, 255);
+      tableLampTimer.start();
     }
+
+    if (tableLampTimer.finished())
+    {
+      tableLamp.setLed(0, 0, 0);
+    }
+    tableLamp.unlock();
+
+    // (Demo door logic)
+    while (door.getLock() && tableLamp.getLock())
+      ;
+
+    door.lock();
+    tableLamp.lock();
+    if (door.getButtonIn())
+    {
+      door.setDoor(180).setLedIn(false).setLedOut(false);
+      doorLightTimer.stop();
+    }
+    else if (door.getButtonOut())
+    {
+      if (!(localtime(&current)->tm_hour >= 19 | localtime(&current)->tm_hour <= 6))
+      {
+        door.setLedIn(true).setLedOut(true);
+        doorLightTimer.start();
+        tableLamp.setLed(255, 0, 0);
+        tableLampTimer.start();
+      }
+    }
+    else
+    {
+      door.setDoor(65);
+    }
+    if (doorLightTimer.finished())
+    {
+      door.setLedIn(false).setLedOut(false);
+    }
+    door.unlock();
+    tableLamp.unlock();
   }
 }
