@@ -43,16 +43,14 @@ unsigned int readDigitalInputs();
 void setDigitalOutput(const int pin, const bool state);
 
 void readAnalogInput();
+
 void handleConnections();
 void connectWifi();
 
-Servo doorServo;
-
-bool buttonOutside = false;
-bool buttonInside = false;
-bool ledInside = false;
-bool ledOutside = false;
-int door = 0;
+bool button = false;
+bool led = false;
+bool buzzer = false;
+int smokeSensor = 0;
 
 ArduinoWiFiServer server(PORT);
 
@@ -66,10 +64,6 @@ void setup()
     Wire.begin();
 
     delay(1000);
-
-    // Use pin d5 as servo output
-    doorServo.attach(D5);
-    pinMode(D5, OUTPUT);
 
     configureDigitalIC();
 
@@ -87,13 +81,11 @@ void loop()
 
     int inputData = readDigitalInputs();
 
-    buttonOutside = inputData == 13;
-    buttonInside = inputData == 14;
+    button = inputData == 13;
 
-    setDigitalOutput(4, ledInside);
-    setDigitalOutput(5, ledOutside);
+    setDigitalOutput(4, buzzer);
+    setDigitalOutput(5, led);
 
-    doorServo.write(door);
 }
 
 void handleConnections()
@@ -107,13 +99,12 @@ void handleConnections()
 
         StaticJsonDocument<100> jsonIn;
         deserializeJson(jsonIn, s);
-        door = jsonIn["door"];
-        ledInside = jsonIn["ledI"];
-        ledOutside = jsonIn["ledO"];
+        led = jsonIn["ld"];
+        buzzer = jsonIn["bz"];
 
         StaticJsonDocument<100> jsonOut;
-        jsonOut["btnO"] = buttonOutside;
-        jsonOut["btnI"] = buttonInside;
+        jsonOut["btn"] = button;
+        jsonOut["smk"] = smokeSensor;
 
         String output;
         serializeJson(jsonOut, output);
