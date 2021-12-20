@@ -4,10 +4,10 @@
 class Column : public Module
 {
 private:
-  bool led = false; // de led in de knop
-  bool buz = false; // de buzzer
-  bool smkS = false; // de rooksensor
-  bool btn = false; // de knop op de zuil
+  bool led = false;         // de led in de knop
+  bool buzzer = false;      // de buzzer
+  bool smokeSensor = false; // de rooksensor
+  bool button = false;      // de knop op de zuil
 
 public:
   Column();
@@ -15,4 +15,7 @@ public:
 
   void setInputsJSON(const std::string json);
   std::string getOutputsJSON() const;
+
+  bool getButton();
+  void setBuzzer(bool);
 };

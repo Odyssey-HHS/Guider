@@ -1,11 +1,14 @@
 #include <iostream>
 
-#include "ExampleModule.h"
+#include "Column.h"
 #include "ModuleAddresses.h"
 #include <thread>
+#include <string>
+
+using namespace std;
 
 // Declair an instance of the module
-ExampleModule testModule;
+Column testModule;
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -18,7 +21,7 @@ int main(int argc, char const *argv[])
   Client client(EXAMPLE_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  testModule = ExampleModule(client);
+  testModule = Column(client);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -29,7 +32,7 @@ int main(int argc, char const *argv[])
   logicThread.join();
 }
 
-/* Updates the module objects syncing them with the wemos hardware. */
+// Updates the module objects syncing them with the wemos hardware.
 void fetcher()
 {
   while (1)
@@ -42,25 +45,15 @@ void fetcher()
   }
 }
 
-/* Execute logic functions, these manipulate the outputs of modules. */
+// Execute logic functions, these manipulate the outputs of modules.
 void logic()
 {
   while (1)
   {
-    // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
-    while (testModule.getLock())
-      ;
-    if (testModule.buttonIn)
+    // Buzzer gaat aan zodra er op de knop wordt gedrukt.
+    if (testModule.getButton())
     {
-      testModule.door = 0;
-    }
-    else if (testModule.buttonOut)
-    {
-      testModule.door = 180;
-    }
-    else
-    {
-      testModule.door = 65;
+      cout << "DE ALARMKNOP IS INGEDRUKT. DE BEWONER IS IN NOOD" << endl;
     }
   }
 }

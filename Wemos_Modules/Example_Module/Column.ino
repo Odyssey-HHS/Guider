@@ -85,7 +85,6 @@ void loop()
 
     setDigitalOutput(4, buzzer);
     setDigitalOutput(5, led);
-
 }
 
 void handleConnections()
