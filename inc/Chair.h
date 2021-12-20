@@ -14,8 +14,8 @@ public:
   Chair();
   Chair(Client client);
 
-  bool setMotor();      // this will set the status of the motor
-  bool setLed();        // this will set the status of the led
+  bool setMotor(bool state);      // this will set the status of the motor
+  bool setLed(bool state);        // this will set the status of the led
   bool getSwitch();     // this shows the current status of the switch
   int getFsensor();     // this shows the value of the Forcesensor
 

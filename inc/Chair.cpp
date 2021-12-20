@@ -45,13 +45,13 @@ std::string Chair::getOutputsJSON() const
 bool Chair::setMotor(bool state)
 {
 this->Motor = state;
-return *this; 
+//return *this; 
 }
 
 bool Chair::setLed(bool state)
 {
-this->led = state;       
-return *this;
+this->Led = state;       
+//return *this;
 }
 
 
