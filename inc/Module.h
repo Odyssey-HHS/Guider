@@ -1,3 +1,6 @@
+#ifndef MODULE_H
+#define MODULE_H
+
 #include <string>
 #include "Client.h"
 
@@ -24,3 +27,4 @@ private:
     Client connection;
     bool lockFile = false;
 };
+#endif //MODULE_H

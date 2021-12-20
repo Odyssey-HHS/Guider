@@ -1,3 +1,6 @@
+#ifndef DOOR_H
+#define DOOR_H
+
 #include "Client.h"
 #include "Module.h"
 #include <iostream>
@@ -40,3 +43,4 @@ private:
     bool buttonOut = false;
     bool buttonIn = false;
 };
+#endif // DOOR_H
