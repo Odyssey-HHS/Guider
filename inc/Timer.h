@@ -16,4 +16,4 @@ private:
     int duration;
     std::time_t timestamp = 0;
 };
-#endif
+#endif // TIMER_H

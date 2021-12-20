@@ -29,4 +29,4 @@ private:
   void attachSocket(int server_fd, int port);
   void listenSocket(int server_fd);
 };
-#endif
+#endif // SERVER_H

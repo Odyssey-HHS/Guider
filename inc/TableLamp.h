@@ -1,3 +1,6 @@
+#ifndef TABLELAMP_H
+#define TABLELAMP_H
+
 #include "Client.h"
 #include "Module.h"
 
@@ -17,3 +20,4 @@ private:
   bool pirSensor = false;
   int led = 0;
 };
+#endif // TABLELAMP_H

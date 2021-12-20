@@ -27,4 +27,4 @@ private:
     Client connection;
     bool lockFile = false;
 };
-#endif //MODULE_H
+#endif // MODULE_H

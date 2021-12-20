@@ -1,23 +1,23 @@
 /*
-   HHS PJSD 2021
-
-   Groep 1
-
-   Marko Estrada Rodriguez
-   Wouter de Bruijn
-   Casper Bastiaan-Net
-   Maurice Tacx
-   Steven Cowan
-
-   Wemos I/O Server
-
-   Wemos module connecting to a wifi network and creating a TCP server.
-   Can receive TCP server commands to set or get data.
-   Can use IO from WIB Board
-
-   NOTE:  using library ArduinoJson 6.18.5
-          using FastLED 3.4.0
-*/
+ * HHS PJSD 2021
+ *
+ * Groep 1
+ *
+ * Marko Estrada Rodriguez
+ * Wouter de Bruijn
+ * Casper Bastiaan-Net
+ * Maurice Tacx
+ * Steven Cowan
+ *
+ * Wemos I/O Server
+ *
+ * Wemos module connecting to a wifi network and creating a TCP server.
+ * Can receive TCP server commands to set or get data.
+ * Can use IO from WIB Board
+ *
+ * NOTE: using library ArduinoJson 6.18.5
+ *       using Adafruit_NeoPixel 1.10.1
+ */
 
 #include <Wire.h>
 #include <ArduinoJson.h>

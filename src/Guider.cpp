@@ -102,6 +102,7 @@ void logic()
     {
       door.setDoor(65);
     }
+    
     if (doorLightTimer.finished())
     {
       door.setLedIn(false).setLedOut(false);
