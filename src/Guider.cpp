@@ -53,14 +53,14 @@ void fetcher()
   }
 }
 
-std::time_t current;
-
 /* Execute logic functions, these manipulate the outputs of modules. */
 void logic()
 {
   while (1)
   {
-    // Table Lamp example logic
+    std::time_t current = std::time(nullptr);
+
+    // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
     while (tableLamp.getLock())
       ;
     if (tableLamp.getPirSensor())

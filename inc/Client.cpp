@@ -1,5 +1,4 @@
 #include "Client.h"
-#include <iostream>
 
 Client::Client() {
   connectedSocket_fd = -1;
@@ -42,13 +41,11 @@ int Client::createSocket(const char *address, const int port)
 
 void Client::connect(int socket_fd)
 {
-  std::cout<<"in connect function"<<std::endl;
   if (::connect(socket_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
   {
     perror("Connection Failed.\n");
     exit(EXIT_FAILURE);
   }
-  std::cout<<"connected"<<std::endl;
 
   connectedSocket_fd = socket_fd;
 }
