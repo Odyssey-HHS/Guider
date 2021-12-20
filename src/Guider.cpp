@@ -11,12 +11,13 @@
 #include "Timer.h"
 
 // Declair an instance of the module
-Bed testModule;
+Bed bed;
 TableLamp tableLamp;
 Door door;
 
-Timer doorLightTimer = Timer(5);
-Timer tableLampTimer = Timer(2);
+//Timer doorLightTimer = Timer(5);
+//Timer tableLampTimer = Timer(2);
+Timer bedTimer = Timer(10);
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -26,13 +27,14 @@ void logic();
 int main(int argc, char const *argv[])
 {
   // Create a new connection to the Wemos board.
-  Client lampClient(LAMP_MODULE, 8080);
-  Client doorClient(DOOR_MODULE, 8080);
+  Client bedClient(BED_MODULE, 8080);
+ // Client lampClient(LAMP_MODULE, 8080);
+  //Client doorClient(DOOR_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  testModule = Bed(client);
-  tableLamp = TableLamp(lampClient);
-  door = Door(doorClient);
+  bed = Bed(bedClient);
+  //tableLamp = TableLamp(lampClient);
+  //door = Door(doorClient);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -49,8 +51,8 @@ void fetcher()
   while (1)
   {
     // Synchronize the object with the Wemos module
-    tableLamp.fetch();
-    door.fetch();
+    //tableLamp.fetch();
+    //door.fetch();
 
     // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
@@ -66,17 +68,22 @@ void logic()
     std::time_t current = std::time(nullptr);
 
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
-    while (testModule.getLock())
+    while (bed.getLock())
     ;
-    if (testModule.getps()>=100)
+    if (bed.getps()>=100)
     {
-      if (testModule.getsw()==1)
+      if (bed.getsw()==1)
       {
-        testModule.setled(1);
+        bed.setled(1);
+        bedTimer.start();
+      }
+      if(bedTimer.finished()&&(bed.getsw()==0))
+      {
+        bed.setled(0);
       }
       // usleep(1000);
       // testModule.setled(0);
-    while (tableLamp.getLock())
+    /*while (tableLamp.getLock())
       ;
     tableLamp.lock();
     if (tableLamp.getPirSensor())
@@ -122,5 +129,6 @@ void logic()
     }
     door.unlock();
     tableLamp.unlock();
+  }*/
   }
 }
