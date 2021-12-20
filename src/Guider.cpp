@@ -24,7 +24,6 @@ int main(int argc, char const *argv[])
 {
   // Create a new connection to the Wemos board.
   //Client lampClient(LAMP_MODULE, 8080);
-  std::cout<<"attempting connection"<<std::endl;
   Client doorClient(DOOR_MODULE, 8080);
   std::cout<<"connected"<<std::endl;
   // Create a new module using the connection created above.
@@ -55,20 +54,19 @@ void fetcher()
   }
 }
 
-    std::time_t current;
-
 /* Execute logic functions, these manipulate the outputs of modules. */
 void logic()
 {
   while (1)
   {
+    std::time_t current = std::time(nullptr);
 
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
     while (tableLamp.getLock())
       ;
 
     // Just as an example
-    std::cout << "PID: " << tableLamp.getPirSensor() << "\n";
+    //std::cout << "PID: " << tableLamp.getPirSensor() << "\n";
 
     // An simple example, ofcourse sleep can't be used.
     tableLamp.lock();
