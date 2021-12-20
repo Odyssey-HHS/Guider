@@ -56,7 +56,6 @@ int main(int argc, char const *argv[])
 /* Updates the module objects syncing them with the wemos hardware. */
 void fetcher()
 {
-  return;
   while (1)
   {
     // Synchronize the object with the Wemos module
@@ -131,14 +130,18 @@ void dashboard()
 {
   while (1)
   {
+    std::cout << "Waiting for connection\n";
     // Wait for client (blocking)
     int socket_fd = server.awaitClient();
+
+    std::cout << "Connected!\n";
 
     int receiveStatus = 0;
 
     // Disconnect after message failure.
-    while (receiveStatus < 0)
+    while (receiveStatus >= 0)
     {
+      std::cout << "Waiting for message!\n";
       // Wait for message (blocking)
       char buffer[4096] = {0};
       receiveStatus = server.receive(socket_fd, buffer, 4096);
@@ -147,29 +150,44 @@ void dashboard()
       rapidjson::Document document;
       document.Parse(buffer);
 
+      if (!document.IsObject())
+      {
+        std::cout << "Didn't recieve JSON! Closing connection\n";
+        receiveStatus = -1;
+        break;
+      }
+
+      if (!document["module"].IsString())
+      {
+        std::cout << "JSON object didn't contain module string! Closing connection\n";
+        receiveStatus = -1;
+        break;
+      }
+
       std::string moduleHeader = document["module"].GetString();
       Module *module = nullptr;
 
-      if (moduleHeader.compare("light"))
+      if (moduleHeader.compare("light") == 0)
       {
-        module = &tableLamp;
+        std::cout << "Light\n";
+        module = nullptr;
       }
 
-      if (moduleHeader.compare("door"))
+      if (moduleHeader.compare("door") == 0)
       {
-        module = &door;
+        std::cout << "Door\n";
+        module = nullptr;
       }
 
       while (module->getLock())
         ;
-      ;
 
       module->lock();
 
       // TODO: @Wouter @Casper The setInputsJSON function needs to check if a value is given and then read it. The dashboard can't write the whole object because it might be old data and that would cause problems.
 
       module->setInputsJSON(buffer); // Set the inputs to dashboard values
-      // module->setOutputsJSON(buffer); // Set the outputs to dashboard values
+      //module->setOutputsJSON(buffer); // Set the outputs to dashboard values
 
       module->unlock();
 
