@@ -40,9 +40,9 @@ void configureDigitalIC();
 void configureAnalogIC();
 
 unsigned int readDigitalInputs();
-void setDigitalOutput(const int pin, const bool state);
+void setDigitalOutput(byte digitalBuffer);
 
-void readAnalogInput();
+void readAnalogInputs(const int ANALOG_CH, unsigned int *analog1, unsigned int *analog2);
 void handleConnections();
 void connectWifi();
 
@@ -89,6 +89,7 @@ void loop()
     int inputData = readDigitalInputs();
 
     buttonOutside = inputData & (1 << 0);
+
     buttonInside = inputData & (1 << 1);
 
     setDigitalOutput((ledInside << 5) | (ledOutside << 4));
@@ -138,7 +139,7 @@ void setDigitalOutput(byte digitalBuffer)
 {
     Wire.beginTransmission(DIGITAL_IC_ADDR); // Choose the PCA9554A
     Wire.write(byte(DIGITAL_IC_OUT));        // Hex adress 0x01 to set outputs (DIO4-DIO7) to 1 or 0
-    Wire.write(digitalBuffer);          // Set one of the output (DIO4-DIO7) to 1 or 0
+    Wire.write(digitalBuffer);               // Set one of the output (DIO4-DIO7) to 1 or 0
     Wire.endTransmission();                  // End I2C connection
 }
 
@@ -160,31 +161,16 @@ void configureAnalogIC()
     Wire.endTransmission();                 // End I2C connection
 }
 
-/* Read the analog channel of the MAX11647 */
-unsigned int readAnalogInput(int ANALOG_CH)
+/* Read the analog channels of the MAX11647 */
+void readAnalogInputs(const int ANALOG_CH, unsigned int *analog1, unsigned int *analog2)
 {
-
-    unsigned int anin0;
-    unsigned int anin1;
-
-    // Read MAX11647
-    if (ANALOG_CH == 0)
-    {
-        Wire.requestFrom(ANALOG_IC_ADDR, 4); // Request values from MAX11647 , 4 Bytes
-        anin0 = Wire.read() & 0x03;          // AND values with 0000 0011 Copy values to variable anin0
-        anin0 = anin0 << 8;                  // Shift anin0 8 places
-        anin0 = anin0 | Wire.read();         // OR anin1 with data from analog ic
-        return anin0;                        // Return value of anin0
-    }
-
-    if (ANALOG_CH == 1)
-    {
-        Wire.requestFrom(ANALOG_IC_ADDR, 4); // Request values from MAX11647 , 4 Bytes
-        anin1 = Wire.read() & 0x03;          // AND values with 0000 0011 Copy values to variable anin1
-        anin1 = anin1 << 8;                  // Shift anin1 8 places
-        anin1 = anin1 | Wire.read();         // OR anin1 with data from analog ic
-        return anin1;                        // Return value of anin1
-    }
+    Wire.requestFrom(ANALOG_CH, 4);
+    *analog1 = Wire.read() & 0x03;
+    *analog1 = *analog1 << 8;
+    *analog1 = *analog1 | Wire.read();
+    *analog2 = Wire.read() & 0x03;
+    *analog2 = *analog2 << 8;
+    *analog2 = *analog2 | Wire.read();
 }
 
 void connectWifi()
