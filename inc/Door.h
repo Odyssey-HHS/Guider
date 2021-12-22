@@ -13,22 +13,11 @@ public:
 
     void setInputsJSON(const std::string json);
     std::string getOutputsJSON() const;
+    std::string getInputsJSON() const;
 
-    Door &setLedIn(bool val)
-    {
-        ledIn = val;
-        return *this;
-    }
-    Door &setLedOut(bool val)
-    {
-        ledOut = val;
-        return *this;
-    }
-    Door &setDoor(int val)
-    {
-        door = val;
-        return *this;
-    }
+    Door &setLedIn(bool val);
+    Door &setLedOut(bool val);
+    Door &setDoor(int val);
     bool getLedIn() { return ledIn; }
     bool getLedOut() { return ledOut; }
     int getDoor() { return door; }

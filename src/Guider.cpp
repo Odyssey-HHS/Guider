@@ -14,9 +14,11 @@
 #include "Door.h"
 #include "TableLamp.h"
 #include "Timer.h"
+#include "Dashboard.h"
 
-// Declair dashboard server
+// Declair dashboard server and class
 Server server(8000);
+Dashboard dashboardModule;
 
 // Declair an instance of the module
 TableLamp tableLamp;
@@ -34,13 +36,14 @@ void dashboard();
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
+  dashboardModule = Dashboard();
   // Create a new connection to the Wemos board.
   Client lampClient(LAMP_MODULE, 8080);
-  Client doorClient(DOOR_MODULE, 8080);
+  //Client doorClient(DOOR_MODULE, 8080);
 
   // Create a new module using the connection created above.
   tableLamp = TableLamp(lampClient);
-  door = Door(doorClient);
+  //door = Door(doorClient);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -60,7 +63,7 @@ void fetcher()
   {
     // Synchronize the object with the Wemos module
     tableLamp.fetch();
-    door.fetch();
+    //door.fetch();
 
     // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
@@ -92,36 +95,36 @@ void logic()
     tableLamp.unlock();
 
     // (Demo door logic)
-    while (door.getLock() && tableLamp.getLock())
-      ;
+    // while (door.getLock() && tableLamp.getLock())
+    //   ;
 
-    door.lock();
-    tableLamp.lock();
-    if (door.getButtonIn())
-    {
-      door.setDoor(180).setLedIn(false).setLedOut(false);
-      doorLightTimer.stop();
-    }
-    else if (door.getButtonOut())
-    {
-      if (!(localtime(&current)->tm_hour >= 19 | localtime(&current)->tm_hour <= 6))
-      {
-        door.setLedIn(true).setLedOut(true);
-        doorLightTimer.start();
-        tableLamp.setLed(255, 0, 0);
-        tableLampTimer.start();
-      }
-    }
-    else
-    {
-      door.setDoor(65);
-    }
+    // door.lock();
+    // tableLamp.lock();
+    // if (door.getButtonIn())
+    // {
+    //   door.setDoor(180).setLedIn(false).setLedOut(false);
+    //   doorLightTimer.stop();
+    // }
+    // else if (door.getButtonOut())
+    // {
+    //   if (!(localtime(&current)->tm_hour >= 19 | localtime(&current)->tm_hour <= 6))
+    //   {
+    //     door.setLedIn(true).setLedOut(true);
+    //     doorLightTimer.start();
+    //     tableLamp.setLed(255, 0, 0);
+    //     tableLampTimer.start();
+    //   }
+    // }
+    // else
+    // {
+    //   door.setDoor(65);
+    // }
 
-    if (doorLightTimer.finished())
-    {
-      door.setLedIn(false).setLedOut(false);
-    }
-    door.unlock();
+    // if (doorLightTimer.finished())
+    // {
+    //   door.setLedIn(false).setLedOut(false);
+    // }
+    // door.unlock();
     tableLamp.unlock();
   }
 }
@@ -157,39 +160,17 @@ void dashboard()
         break;
       }
 
-      if (!document["module"].IsString())
-      {
-        std::cout << "JSON object didn't contain module string! Closing connection\n";
-        receiveStatus = -1;
-        break;
+      while (dashboardModule.getLock())
+      ;
+      dashboardModule.lock();
+
+      if (document["openDoor"].IsBool()) {
+        dashboardModule.setDoor(document["openDoor"].GetBool());
       }
 
-      std::string moduleHeader = document["module"].GetString();
-      Module *module = nullptr;
-
-      if (moduleHeader.compare("light") == 0)
-      {
-        std::cout << "Light\n";
-        module = nullptr;
+      if (document["lampColour"].IsInt()) {
+        dashboardModule.setLampColour(document["lampColour"].GetInt());
       }
-
-      if (moduleHeader.compare("door") == 0)
-      {
-        std::cout << "Door\n";
-        module = nullptr;
-      }
-
-      while (module->getLock())
-        ;
-
-      module->lock();
-
-      // TODO: @Wouter @Casper The setInputsJSON function needs to check if a value is given and then read it. The dashboard can't write the whole object because it might be old data and that would cause problems.
-
-      module->setInputsJSON(buffer); // Set the inputs to dashboard values
-      //module->setOutputsJSON(buffer); // Set the outputs to dashboard values
-
-      module->unlock();
 
       std::cout << "Recieved!  " << buffer << "\n";
     }

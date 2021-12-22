@@ -12,6 +12,10 @@ void TableLamp::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
+  if (this->pirSensor != document["pir"].GetBool()){
+    setUpdated(true);
+  }
+
   this->pirSensor = document["pir"].GetBool();
 }
 
@@ -33,6 +37,24 @@ std::string TableLamp::getOutputsJSON() const
   std::string output = buffer.GetString();
   return output;
 }
+std::string TableLamp::getInputsJSON() const
+{
+  // Create JSON object.
+  rapidjson::Document document;
+  document.SetObject();
+
+  rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
+
+  document.AddMember("pir", this->pirSensor, allocator);
+
+  // Stringify object
+  rapidjson::StringBuffer buffer;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  document.Accept(writer);
+
+  std::string output = buffer.GetString();
+  return output;
+}
 
 bool TableLamp::getPirSensor()
 {
@@ -41,6 +63,9 @@ bool TableLamp::getPirSensor()
 
 TableLamp &TableLamp::setLed(const int red, const int green, const int blue)
 {
+  if (this->led != (red << 16) + (green << 8) + blue){
+    setUpdated(true);
+  }
   this->led = (red << 16) + (green << 8) + blue;
   return *this;
 }
