@@ -4,10 +4,10 @@
 class Column : public Module
 {
 private:
-  bool led = false;         // de led in de knop
-  bool buzzer = false;      // de buzzer
-  bool smokeSensor = false; // de rooksensor
-  bool button = false;      // de knop op de zuil
+  bool led = false;    // de led in de knop
+  bool buzzer = false; // de buzzer
+  int smokeSensor = 0; // de rooksensor
+  bool button = false; // de knop op de zuil
 
 public:
   Column();

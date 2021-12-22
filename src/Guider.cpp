@@ -50,7 +50,7 @@ void logic()
 {
   while (1)
   {
-    // Buzzer gaat aan zodra er op de knop wordt gedrukt.
+    // Bericht komt zodra er op de knop wordt gedrukt.
     if (testModule.getButton())
     {
       cout << "DE ALARMKNOP IS INGEDRUKT. DE BEWONER IS IN NOOD" << endl;

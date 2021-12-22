@@ -13,7 +13,7 @@ void Column::setInputsJSON(const std::string json)
   document.Parse(json.c_str());
 
   this->button = document["btn"].GetBool();
-  this->smokeSensor = document["smk"].GetBool();
+  this->smokeSensor = document["smk"].GetInt();
 }
 
 std::string Column::getOutputsJSON() const
