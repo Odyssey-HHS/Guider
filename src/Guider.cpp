@@ -79,20 +79,15 @@ void logic()
     std::time_t current = std::time(nullptr);
 
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
-    while (tableLamp.getLock())
+    while (tableLamp.getLock() || dashboardModule.getLock())
       ;
     tableLamp.lock();
-    if (tableLamp.getPirSensor())
-    {
-      tableLamp.setLed(255, 255, 255);
-      tableLampTimer.start();
-    }
+    dashboardModule.lock();
 
-    if (tableLampTimer.finished())
-    {
-      tableLamp.setLed(0, 0, 0);
-    }
+    tableLamp.setLed(dashboardModule.getLampColour());
+
     tableLamp.unlock();
+    dashboardModule.unlock();
 
     // (Demo door logic)
     // while (door.getLock() && tableLamp.getLock())
@@ -125,7 +120,7 @@ void logic()
     //   door.setLedIn(false).setLedOut(false);
     // }
     // door.unlock();
-    tableLamp.unlock();
+    // tableLamp.unlock();
   }
 }
 
@@ -167,7 +162,7 @@ void dashboard()
       if (document.HasMember("openDoor") && document["openDoor"].IsBool()) {
         dashboardModule.setDoor(document["openDoor"].GetBool());
       }
-
+      
       if (document.HasMember("lampColour") && document["lampColour"].IsInt()) {
         dashboardModule.setLampColour(document["lampColour"].GetInt());
       }
