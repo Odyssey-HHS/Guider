@@ -69,3 +69,9 @@ TableLamp &TableLamp::setLed(const int red, const int green, const int blue)
   this->led = (red << 16) + (green << 8) + blue;
   return *this;
 }
+
+TableLamp &TableLamp::setLed(const int rgb)
+{
+  this->led = rgb;
+  return *this;
+}
