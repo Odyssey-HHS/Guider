@@ -84,7 +84,7 @@ void logic()
     tableLamp.lock();
     dashboardModule.lock();
 
-    tableLamp.setLed(dashboardModule.getLampColour());
+    tableLamp.setLed(dashboardModule.getLampColor());
 
     tableLamp.unlock();
     dashboardModule.unlock();
@@ -163,12 +163,15 @@ void dashboard()
         dashboardModule.setDoor(document["openDoor"].GetBool());
       }
       
-      if (document.HasMember("lampColour") && document["lampColour"].IsInt()) {
-        dashboardModule.setLampColour(document["lampColour"].GetInt());
+      if (document.HasMember("lampColor") && document["lampColor"].IsInt()) {
+        dashboardModule.setLampColor(document["lampColor"].GetInt());
       }
 
       std::cout << "Recieved!  " << buffer << "\n";
       dashboardModule.unlock();
+
+      // TODO: @Casper create a getJSON for the dashboard module containing all module data (openDoor/lampColor/etc status.)
+      // server.send(socket_fd, dashboardModule.getJSON());
     }
 
     close(socket_fd);

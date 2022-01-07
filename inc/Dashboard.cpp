@@ -5,9 +5,9 @@ bool Dashboard::getDoor()
     return this->openDoor;
 }
 
-int Dashboard::getLampColour()
+int Dashboard::getLampColor()
 {
-    return this->lampColour;
+    return this->lampColor;
 }
 
 Dashboard &Dashboard::setDoor(bool val)
@@ -16,9 +16,9 @@ Dashboard &Dashboard::setDoor(bool val)
     return *this;
 }
 
-Dashboard &Dashboard::setLampColour(int val)
+Dashboard &Dashboard::setLampColor(int val)
 {
-    this->lampColour = val;
+    this->lampColor = val;
     return *this;
 }
 

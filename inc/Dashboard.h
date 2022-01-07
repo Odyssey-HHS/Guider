@@ -4,16 +4,16 @@
 class Dashboard {
     public:
         bool getDoor();
-        int getLampColour();
+        int getLampColor();
         Dashboard &setDoor(bool);
-        Dashboard &setLampColour(int);
+        Dashboard &setLampColor(int);
 
         bool getLock();
         void lock();
         void unlock();
     private:
         bool openDoor = false;
-        int lampColour = 0;
+        int lampColor = 0;
         bool lockFile = false;
 };
 #endif
