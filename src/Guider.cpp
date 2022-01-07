@@ -173,6 +173,7 @@ void dashboard()
       }
 
       std::cout << "Recieved!  " << buffer << "\n";
+      dashboardModule.unlock();
     }
 
     close(socket_fd);
