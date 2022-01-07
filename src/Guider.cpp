@@ -164,11 +164,11 @@ void dashboard()
       ;
       dashboardModule.lock();
 
-      if (document["openDoor"].IsBool()) {
+      if (document.HasMember("openDoor") && document["openDoor"].IsBool()) {
         dashboardModule.setDoor(document["openDoor"].GetBool());
       }
 
-      if (document["lampColour"].IsInt()) {
+      if (document.HasMember("lampColour") && document["lampColour"].IsInt()) {
         dashboardModule.setLampColour(document["lampColour"].GetInt());
       }
 
