@@ -2,9 +2,11 @@
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include <iostream>
 
 Chair::Chair() : Module(Client()) {}
 Chair::Chair(Client client) : Module(client) {}
+
 
 void Chair::setInputsJSON(const std::string json)
 {
@@ -39,31 +41,5 @@ std::string Chair::getOutputsJSON() const
 
   std::string output = buffer.GetString();
   return output;
-}
-
-
-bool Chair::setMotor(bool state)
-{
-this->Motor = state;
-//return *this; 
-}
-
-bool Chair::setLed(bool state)
-{
-this->Led = state;       
-//return *this;
-}
-
-
-bool Chair::getSwitch()
-{
-return this->Switch;
-}
-
-
-int Chair::getFsensor()
-{
-return this->Fsensor;
-
 }
 

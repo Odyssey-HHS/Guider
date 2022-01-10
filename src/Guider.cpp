@@ -14,12 +14,12 @@ void logic();
 int main(int argc, char const *argv[])
 {
   // Create a new connection to the Wemos board.
-  Client client(EXAMPLE_MODULE, 8080);
+  Client chairClient(CHAIR_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  //Chair = Chair(client);
+  
+   chair = Chair(chairClient);
 
-   chair = Chair(client);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);

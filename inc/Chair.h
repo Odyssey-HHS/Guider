@@ -5,21 +5,50 @@
 class Chair : public Module
 {
 private:
-  bool Motor;
-  bool Led;
-  bool Switch;
-  int Fsensor;
+  bool Motor = false;
+  bool Led = false;
+  bool Switch = false;
+  int Fsensor = 0;
 
 public:
   Chair();
   Chair(Client client);
 
-  bool setMotor(bool state);      // this will set the status of the motor
-  bool setLed(bool state);        // this will set the status of the led
-  bool getSwitch();     // this shows the current status of the switch
-  int getFsensor();     // this shows the value of the Forcesensor
+        
 
   void setInputsJSON(const std::string json);
   std::string getOutputsJSON() const;
+
+
+// this will set the status of the motor
+Chair &setMotor(bool state)
+{
+Motor = state;
+return *this; 
+}
+
+ // this will set the status of the led
+Chair &setLed(bool state)
+{
+Led = state;       
+return *this;
+}
+
+// this shows the current status of the switch
+bool getSwitch()
+{
+return Switch;
+}
+
+// this shows the value of the Forcesensor
+int getFsensor()
+{
+return Fsensor;
+
+}
+
+
+
+
 }; 
 
