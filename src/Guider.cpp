@@ -7,13 +7,25 @@
 #include "ModuleAddresses.h"
 #include "Door.h"
 #include "TableLamp.h"
+<<<<<<< Updated upstream
 #include <thread>
+=======
+#include "Bed.h"
+#include "Wall.h"
+
+>>>>>>> Stashed changes
 #include "Timer.h"
 
 // Declair an instance of the module
 Bed bed;
+<<<<<<< Updated upstream
 //TableLamp tableLamp;
 //Door door;
+=======
+TableLamp tableLamp;
+Door door;
+wall Wall;
+>>>>>>> Stashed changes
 
 //Timer doorLightTimer = Timer(5);
 //Timer tableLampTimer = Timer(2);
@@ -29,6 +41,7 @@ int main(int argc, char const *argv[])
   
   // Create a new connection to the Wemos board.
   Client bedClient(BED_MODULE, 8080);
+<<<<<<< Updated upstream
  // Client lampClient(LAMP_MODULE, 8080);
   //Client doorClient(DOOR_MODULE, 8080);
 
@@ -36,6 +49,17 @@ int main(int argc, char const *argv[])
   bed = Bed(bedClient);
   //tableLamp = TableLamp(lampClient);
   //door = Door(doorClient);
+=======
+  Client lampClient(LAMP_MODULE, 8080);
+  Client doorClient(DOOR_MODULE, 8080);
+  Client WallClient(WALL_MODULE, 8080);
+
+  // Create a new module using the connection created above.
+  bed = Bed(bedClient);
+  tableLamp = TableLamp(lampClient);
+  door = Door(doorClient);
+  Wall = wall(WallClient);
+>>>>>>> Stashed changes
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -55,6 +79,7 @@ void fetcher()
     //tableLamp.fetch();
     //door.fetch();
     bed.fetch();
+    Wall.fetch();
 
     // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
@@ -69,6 +94,7 @@ void logic()
   {
     std::time_t current = std::time(nullptr);
 
+<<<<<<< Updated upstream
     // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
     while (bed.getLock())
     ;
@@ -97,6 +123,10 @@ void logic()
       // usleep(1000);
       // testModule.setled(0);
     /*while (tableLamp.getLock())
+=======
+    /*// Table Lamp Logic, turns white on motion, otherwise it runs to the dashboard provided color.
+    while (tableLamp.getLock() || dashboardModule.getLock())
+>>>>>>> Stashed changes
       ;
     tableLamp.lock();
     if (tableLamp.getPirSensor())
@@ -141,8 +171,66 @@ void logic()
       door.setLedIn(false).setLedOut(false);
     }
     door.unlock();
+<<<<<<< Updated upstream
     tableLamp.unlock();*/
   
   
+=======
+    dashboardModule.unlock();
+
+    // Bed Logic
+    while (bed.getLock())
+      ;
+    bed.lock();
+    if ((bed.getps() >= 100) && isNightTime(current))
+    {
+      bed.switchPast = bed.switchCurrent;
+
+      if (bed.getsw())
+      {
+        bed.switchCurrent = bed.getsw();
+      }
+      else if (!bed.getsw())
+      {
+        bed.switchCurrent = bed.getsw();
+      }
+      if (!bed.switchCurrent && bed.switchPast)
+      {
+        bed.setled(!bed.getLed());
+        bedTimer.start();
+      }
+      if (bedTimer.finished())
+      {
+        bed.setled(0);
+      }
+    }
+    else if (!bedTimer.finished())
+    {
+      bedTimer.start();
+    }
+    bed.unlock();
+
+    while (bed.getLock() || tableLamp.getLock() || dashboardModule.getLock())
+      ;
+    // Bed / Night detection
+    bed.lock();
+    tableLamp.lock();
+    dashboardModule.lock();
+
+    if (bed.getps() > 100 && isNightTime(current) && tableLamp.getPirSensor())
+    {
+      dashboardModule.setMotionAlert(true);
+    }
+
+    bed.unlock();
+    tableLamp.unlock();
+    dashboardModule.unlock();*/
+    
+    // logic Wall
+    while (Wall.getLock())
+      ;
+    Wall.lock();
+  }
+>>>>>>> Stashed changes
 }
 }
