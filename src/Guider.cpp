@@ -168,8 +168,8 @@ void dashboard()
       }
 
       std::cout << "Recieved!  " << buffer << "\n";
-      
-      server.send(socket_fd, dashboardModule.getJSON());
+
+      server.send(socket_fd, dashboardModule.getJSON().c_str());
       dashboardModule.unlock();
     }
 
