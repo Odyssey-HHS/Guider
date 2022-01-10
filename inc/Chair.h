@@ -9,10 +9,16 @@ private:
   bool Led = false;
   bool Switch = false;
   int Fsensor = 0;
+  
+  
 
 public:
+
   Chair();
   Chair(Client client);
+
+  bool switchPast;
+  bool switchCurrent;
 
         
 

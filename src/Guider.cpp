@@ -17,9 +17,8 @@ int main(int argc, char const *argv[])
   Client chairClient(CHAIR_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  
-   chair = Chair(chairClient);
 
+  chair = Chair(chairClient);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -48,20 +47,37 @@ void logic()
 {
   while (1)
   {
-    // Example
-    while (chair.getSwitch())
-      ;
 
-    // print value force sensor
-    std::cout << "ForceSensor: " << chair.getFsensor() << "\n";
+    if (chair.getSwitch())
+    {
+      chair.switchCurrent != chair.switchCurrent;
+    }
 
-    // 
     chair.lock();
-    chair.setLed(true);
+    chair.setLed(false);
     chair.unlock();
-    sleep(2);
+
     chair.lock();
-    chair.setMotor(true);
+    chair.setMotor(false);
     chair.unlock();
+
+    while (chair.switchCurrent)
+    {
+
+      // print value force sensor
+      std::cout << "ForceSensor: " << chair.getFsensor() << "\n";
+
+      // print value push button
+      std::cout << "button: " << chair.getSwitch() << "\n";
+
+      //
+      chair.lock();
+      chair.setLed(true);
+      chair.unlock();
+
+      chair.lock();
+      chair.setMotor(true);
+      chair.unlock();
+    }
   }
 }
