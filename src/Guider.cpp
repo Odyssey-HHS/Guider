@@ -150,31 +150,53 @@ void logic()
 
     // Bed Logic
     while (bed.getLock())
-    ;
-      if ((bed.getps() >= 100) && (isNightTime))
-      {
-        bed.switchPast = bed.switchCurrent;
+      ;
+    bed.lock();
+    if ((bed.getps() >= 100) && isNightTime(current))
+    {
+      bed.switchPast = bed.switchCurrent;
 
-        if (bed.getsw())
-        {
-          bed.switchCurrent = bed.getsw();
-        }
-        else if (!bed.getsw())
-        {
-          bed.switchCurrent = bed.getsw();
-        }
-        if (!bed.switchCurrent && bed.switchPast)
-        {
-          bed.setled(!bed.getLed());
-          bedTimer.start();
-        }
-      }
-      if (bedTimer.finished()) 
+      if (bed.getsw())
       {
-          bed.setled(0);
+        bed.switchCurrent = bed.getsw();
+      }
+      else if (!bed.getsw())
+      {
+        bed.switchCurrent = bed.getsw();
+      }
+      if (!bed.switchCurrent && bed.switchPast)
+      {
+        bed.setled(!bed.getLed());
+        bedTimer.start();
+      }
+      if (bedTimer.finished())
+      {
+        bed.setled(0);
       }
     }
+    else if (!bedTimer.finished())
+    {
+      bedTimer.start();
+    }
+    bed.unlock();
+
+    while (bed.getLock() || tableLamp.getLock() || dashboardModule.getLock())
+      ;
+    // Bed / Night detection
+    bed.lock();
+    tableLamp.lock();
+    dashboardModule.lock();
+
+    if (bed.getps() > 100 && isNightTime(current) && tableLamp.getPirSensor())
+    {
+      dashboardModule.setMotionAlert(true);
+    }
+
+    bed.unlock();
+    tableLamp.unlock();
+    dashboardModule.unlock();
   }
+}
 
 void dashboard()
 {
@@ -219,6 +241,11 @@ void dashboard()
       if (document.HasMember("lampColor") && document["lampColor"].IsInt())
       {
         dashboardModule.setLampColor(document["lampColor"].GetInt());
+      }
+
+      if (document.HasMember("motionAlert") && document["motionAlert"].IsBool())
+      {
+        dashboardModule.setMotionAlert(document["motionAlert"].GetBool());
       }
 
       std::cout << "Recieved!  " << buffer << "\n";
