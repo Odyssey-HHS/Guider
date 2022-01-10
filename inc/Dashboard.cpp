@@ -3,8 +3,8 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-std::string Dashboard::getJSON()
-{}
+std::string Dashboard::getJSON() const
+{
   rapidjson::Document document;
   document.SetObject();
 
