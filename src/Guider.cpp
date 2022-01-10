@@ -92,14 +92,15 @@ void logic()
     chair.lock();
     if (chair.getSwitch() && chair.getFsensor() > 100 && chairToggleTimer.finished())
     {
-      chair.switchCurrent != chair.switchCurrent;
+      chair.switchCurrent = !chair.switchCurrent;
       chairToggleTimer.start();
+    std::cout << chair.switchCurrent << "\n";
+
     }
 
     if (chair.getFsensor() <= 100) {
       chair.switchCurrent = false;
     }
-    std::cout << chair.switchCurrent << "\n";
 
     chair.setLed(chair.switchCurrent);
     chair.setMotor(chair.switchCurrent);
