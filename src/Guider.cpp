@@ -152,9 +152,7 @@ void logic()
     // Bed Logic
     while (bed.getLock())
     ;
-    if (isNightTime)
-    {
-      if (bed.getps() >= 100)
+      if ((bed.getps() >= 100) && (isNightTime))
       {
         bed.switchPast = bed.switchCurrent;
 
@@ -181,7 +179,6 @@ void logic()
       }
     }
   }
-}
 
 void dashboard()
 {
