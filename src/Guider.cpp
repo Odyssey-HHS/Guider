@@ -151,27 +151,33 @@ void logic()
 
     // Bed Logic
     while (bed.getLock())
-      ;
-    if (bed.getps() >= 100)
+    ;
+    if (isNightTime)
     {
-      bed.swp = bed.swc;
+      if (bed.getps() >= 100)
+      {
+        bed.switchPast = bed.switchCurrent;
 
-      if (bed.getsw() == 1)
+        if (bed.getsw())
+        {
+          bed.switchCurrent = bed.getsw();
+        }
+        else if (!bed.getsw())
+        {
+          bed.switchCurrent = bed.getsw();
+        }
+        if (!bed.switchCurrent && bed.switchPast)
+        {
+          bed.setled(!bed.getLed());
+          bedTimer.start();
+        }
+        if (bedTimer.finished())
+        {
+          bed.setled(0);
+        }
+      } else if (!bedTimer.finished()) 
       {
-        bed.swc = bed.getsw();
-      }
-      if (bed.getsw() == 0)
-      {
-        bed.swc = bed.getsw();
-      }
-      if (bed.swc == 0 && bed.swp == 1)
-      {
-        bed.setled(!bed.getLed());
-        bedTimer.start();
-      }
-      if (bedTimer.finished())
-      {
-        bed.setled(0);
+          bedTimer.start();
       }
     }
   }
