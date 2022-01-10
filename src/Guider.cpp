@@ -168,10 +168,9 @@ void dashboard()
       }
 
       std::cout << "Recieved!  " << buffer << "\n";
+      
+      server.send(socket_fd, dashboardModule.getJSON());
       dashboardModule.unlock();
-
-      // TODO: @Casper create a getJSON for the dashboard module containing all module data (openDoor/lampColor/etc status.)
-      // server.send(socket_fd, dashboardModule.getJSON());
     }
 
     close(socket_fd);

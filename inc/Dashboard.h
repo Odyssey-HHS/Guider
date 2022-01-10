@@ -7,6 +7,7 @@ class Dashboard {
         int getLampColor();
         Dashboard &setDoor(bool);
         Dashboard &setLampColor(int);
+        std::string getJson();
 
         bool getLock();
         void lock();
