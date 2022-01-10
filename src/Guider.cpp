@@ -168,13 +168,11 @@ void logic()
           bed.setled(!bed.getLed());
           bedTimer.start();
         }
-        if (bedTimer.finished())
-        {
-          bed.setled(0);
-        }
-      } else if (!bedTimer.finished()) 
+      }
+      bedTimer.start(); 
+      if (bedTimer.finished()) 
       {
-          bedTimer.start();
+          bed.setled(0);
       }
     }
   }
