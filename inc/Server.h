@@ -10,8 +10,8 @@
 class Server
 {
 public:
+  Server(const int port);
   Server();
-  Server(int port);
 
   /* Send a message to the open socket connection.  Returns the number sent or -1. */
   int send(const int socket_fd, const char *msg) const;
@@ -29,4 +29,4 @@ private:
   void attachSocket(int server_fd, int port);
   void listenSocket(int server_fd);
 };
-#endif
+#endif // SERVER_H

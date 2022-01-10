@@ -102,7 +102,7 @@ void handleConnections()
 
     if (client) // Check if client has sent a message, otherwise this is false.
     {
-        String s = client.readStringUntil('}'); //read untill the end of a json request
+        String s = client.readStringUntil('}'); // read untill the end of a json request
 
         StaticJsonDocument<100> jsonIn;
         deserializeJson(jsonIn, s);
