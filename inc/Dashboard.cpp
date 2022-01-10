@@ -10,7 +10,7 @@ std::string Dashboard::getJSON() const
 
   rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
 
-  document.AddMember("door", this->door, allocator);
+  document.AddMember("door", this->openDoor, allocator);
   document.AddMember("lampColor", this->lampColor, allocator);
 
   // Stringify object
