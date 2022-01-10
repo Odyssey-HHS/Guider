@@ -1,13 +1,15 @@
 #ifndef DASHBOARD_H
 #define DASHBOARD_H
 
+#include <string>
+
 class Dashboard {
     public:
         bool getDoor();
         int getLampColor();
         Dashboard &setDoor(bool);
         Dashboard &setLampColor(int);
-        std::string getJson();
+        std::string getJSON();
 
         bool getLock();
         void lock();
