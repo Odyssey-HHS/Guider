@@ -1,22 +1,24 @@
-#include "ExampleModule.h"
+#include "Bed.h"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include <iostream>
 
-ExampleModule::ExampleModule() : Module(Client()) {}
-ExampleModule::ExampleModule(Client client) : Module(client) {}
+Bed::Bed() : Module(Client()) {}
+Bed::Bed(Client client) : Module(client) {}
 
-void ExampleModule::setInputsJSON(const std::string json)
+void Bed::setInputsJSON(const std::string json)
 {
   // 1. Parse a JSON string into DOM.
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  this->buttonIn = document["btnI"].GetBool();
-  this->buttonOut = document["btnO"].GetBool();
+  this->sw = document["Sw"].GetBool();
+  // std::cout<<json<<std::endl;
+  this->ps = document["PS"].GetInt64();
 }
 
-std::string ExampleModule::getOutputsJSON() const
+std::string Bed::getOutputsJSON() const
 {
   // Create JSON object.
   rapidjson::Document document;
@@ -24,9 +26,7 @@ std::string ExampleModule::getOutputsJSON() const
 
   rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
 
-  document.AddMember("ledI", this->ledIn, allocator);
-  document.AddMember("ledO", this->ledOut, allocator);
-  document.AddMember("door", this->door, allocator);
+  document.AddMember("Led", this->led, allocator);
 
   // Stringify object
   rapidjson::StringBuffer buffer;

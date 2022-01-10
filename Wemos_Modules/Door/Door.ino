@@ -32,17 +32,17 @@
 #define DIGITAL_IC_IN 0x00
 #define DIGITAL_IC_OUT 0x01
 
-/*const IPAddress local_IP(172, 16, 99, 100);
+const IPAddress local_IP(172, 16, 99, 100);
 const IPAddress gateway(172, 16, 99, 1);
-const IPAddress subnet(255, 255, 255, 0);*/
+const IPAddress subnet(255, 255, 255, 0);
 
 void configureDigitalIC();
 void configureAnalogIC();
 
 unsigned int readDigitalInputs();
-void setDigitalOutput(byte digitalBuffer);
+void setDigitalOutput(const int pin, const bool state);
 
-void readAnalogInputs(const int ANALOG_CH, unsigned int *analog1, unsigned int *analog2);
+void readAnalogInput();
 void handleConnections();
 void connectWifi();
 
@@ -78,7 +78,7 @@ void setup()
     server.begin();
     Serial.println("TCP Server started listening...");
 
-    // Serial.end();
+    Serial.end();
 }
 
 void loop()
@@ -87,9 +87,7 @@ void loop()
     handleConnections();
 
     int inputData = readDigitalInputs();
-
     buttonOutside = inputData & (1 << 0);
-
     buttonInside = inputData & (1 << 1);
 
     setDigitalOutput((ledInside << 5) | (ledOutside << 4));
@@ -102,9 +100,9 @@ void handleConnections()
     // Gets a client that is connected to the server and has data available for reading.
     WiFiClient client = server.available();
 
-    if (client) // Check if client has send a message, otherwise this is false.
+    if (client) // Check if client has sent a message, otherwise this is false.
     {
-        String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
+        String s = client.readStringUntil('}'); // read untill the end of a json request
 
         StaticJsonDocument<100> jsonIn;
         deserializeJson(jsonIn, s);
@@ -152,37 +150,16 @@ void configureDigitalIC()
     Wire.endTransmission();                  // End I2C connection
 }
 
-/* Config MAX11647 Analog inputs */
-void configureAnalogIC()
-{
-    Wire.beginTransmission(ANALOG_IC_ADDR); // Choose the MAX11647
-    Wire.write(byte(0xA2));                 // set-up byte
-    Wire.write(byte(0x03));                 // configuration byte
-    Wire.endTransmission();                 // End I2C connection
-}
-
-/* Read the analog channels of the MAX11647 */
-void readAnalogInputs(const int ANALOG_CH, unsigned int *analog1, unsigned int *analog2)
-{
-    Wire.requestFrom(ANALOG_CH, 4);
-    *analog1 = Wire.read() & 0x03;
-    *analog1 = *analog1 << 8;
-    *analog1 = *analog1 | Wire.read();
-    *analog2 = Wire.read() & 0x03;
-    *analog2 = *analog2 << 8;
-    *analog2 = *analog2 | Wire.read();
-}
-
 void connectWifi()
 {
     Serial.print("Connecting to ");
     Serial.println(WIFI_SSID);
 
     // Configure static IP.
-    /*if (!WiFi.config(local_IP, gateway, subnet))
+    if (!WiFi.config(local_IP, gateway, subnet))
     {
         Serial.println("STA Failed to configure");
-    }*/
+    }
 
     // Start connecting to the WiFi
     WiFi.begin(WIFI_SSID, WIFI_PASSWD);
