@@ -39,11 +39,11 @@ int main(int argc, char const *argv[])
   dashboardModule = Dashboard();
   // Create a new connection to the Wemos board.
   Client lampClient(LAMP_MODULE, 8080);
-  //Client doorClient(DOOR_MODULE, 8080);
+  Client doorClient(DOOR_MODULE, 8080);
 
   // Create a new module using the connection created above.
   tableLamp = TableLamp(lampClient);
-  //door = Door(doorClient);
+  door = Door(doorClient);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -63,12 +63,17 @@ void fetcher()
   {
     // Synchronize the object with the Wemos module
     tableLamp.fetch();
-    //door.fetch();
+    door.fetch();
 
     // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
     std::cout << "Fetching round...\n";
   }
+}
+
+int isNightTime(std::time_t current)
+{
+  return (localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
 }
 
 /* Execute logic functions, these manipulate the outputs of modules. */
@@ -78,49 +83,60 @@ void logic()
   {
     std::time_t current = std::time(nullptr);
 
-    // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
+    // Table Lamp Logic, turns white on motion, otherwise it runs to the dashboard provided color.
     while (tableLamp.getLock() || dashboardModule.getLock())
       ;
     tableLamp.lock();
     dashboardModule.lock();
 
-    tableLamp.setLed(dashboardModule.getLampColor());
+    if (tableLamp.getPirSensor() && isNightTime(current))
+    {
+      tableLamp.setLed(255, 255, 255);
+      tableLampTimer.start();
+    }
+    else
+    {
+      if (tableLampTimer.finished() || !isNightTime(current))
+        tableLamp.setLed(dashboardModule.getLampColor());
+    }
 
     tableLamp.unlock();
     dashboardModule.unlock();
 
-    // (Demo door logic)
-    // while (door.getLock() && tableLamp.getLock())
-    //   ;
+    // Door Logic
+    while (door.getLock() || dashboardModule.getLock())
+      ;
 
-    // door.lock();
-    // tableLamp.lock();
-    // if (door.getButtonIn())
-    // {
-    //   door.setDoor(180).setLedIn(false).setLedOut(false);
-    //   doorLightTimer.stop();
-    // }
-    // else if (door.getButtonOut())
-    // {
-    //   if (!(localtime(&current)->tm_hour >= 19 | localtime(&current)->tm_hour <= 6))
-    //   {
-    //     door.setLedIn(true).setLedOut(true);
-    //     doorLightTimer.start();
-    //     tableLamp.setLed(255, 0, 0);
-    //     tableLampTimer.start();
-    //   }
-    // }
-    // else
-    // {
-    //   door.setDoor(65);
-    // }
+    door.lock();
+    dashboardModule.lock();
 
-    // if (doorLightTimer.finished())
-    // {
-    //   door.setLedIn(false).setLedOut(false);
-    // }
-    // door.unlock();
-    // tableLamp.unlock();
+    if (door.getButtonIn())
+    {
+      door.setDoor(180).setLedIn(false).setLedOut(false);
+      doorLightTimer.stop();
+    }
+    else if (door.getButtonOut())
+    {
+      if (isNightTime(current))
+      {
+        door.setLedIn(true).setLedOut(true);
+        doorLightTimer.start();
+      }
+    }
+    else
+    {
+      door.setDoor(65);
+    }
+
+    if (doorLightTimer.finished())
+    {
+      door.setLedIn(false).setLedOut(false);
+    }
+
+    if (dashboardModule.getDoor())
+      door.setDoor(180);
+    door.unlock();
+    dashboardModule.unlock();
   }
 }
 
@@ -156,14 +172,16 @@ void dashboard()
       }
 
       while (dashboardModule.getLock())
-      ;
+        ;
       dashboardModule.lock();
 
-      if (document.HasMember("openDoor") && document["openDoor"].IsBool()) {
+      if (document.HasMember("openDoor") && document["openDoor"].IsBool())
+      {
         dashboardModule.setDoor(document["openDoor"].GetBool());
       }
-      
-      if (document.HasMember("lampColor") && document["lampColor"].IsInt()) {
+
+      if (document.HasMember("lampColor") && document["lampColor"].IsInt())
+      {
         dashboardModule.setLampColor(document["lampColor"].GetInt());
       }
 
