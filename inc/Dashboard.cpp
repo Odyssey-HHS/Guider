@@ -12,6 +12,7 @@ std::string Dashboard::getJSON() const
 
   document.AddMember("door", this->openDoor, allocator);
   document.AddMember("lampColor", this->lampColor, allocator);
+  document.AddMember("motionAlert", this->motionAlert, allocator);
 
   // Stringify object
   rapidjson::StringBuffer buffer;
@@ -41,6 +42,12 @@ Dashboard &Dashboard::setDoor(bool val)
 Dashboard &Dashboard::setLampColor(int val)
 {
     this->lampColor = val;
+    return *this;
+}
+
+Dashboard &Dashboard::setMotionAlert(bool val)
+{
+    this->motionAlert = val;
     return *this;
 }
 

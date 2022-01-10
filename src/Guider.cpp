@@ -43,7 +43,6 @@ void dashboard();
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
-
   // Create a new connection to the Wemos board.
   dashboardModule = Dashboard();
   Client bedClient(BED_MODULE, 8080);
@@ -78,7 +77,7 @@ void fetcher()
 
     // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
-    // std::cout << "Fetching round...\n";
+    std::cout << "Fetching round...\n";
   }
 }
 
