@@ -3,6 +3,7 @@ add_library(Client Client.cpp)
 add_library(Module Module.cpp)
 
 add_library(Dashboard Dashboard.cpp)
+add_library(Bed Bed.cpp)
 add_library(TableLamp TableLamp.cpp)
 add_library(Door Door.cpp)
 add_library(Timer Timer.cpp)

@@ -9,24 +9,31 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
+#include "Client.h"
 #include "Server.h"
+
 #include "ModuleAddresses.h"
+
+#include "Dashboard.h"
 #include "Door.h"
 #include "TableLamp.h"
+#include "Bed.h"
+
 #include "Timer.h"
-#include "Dashboard.h"
 
 // Declair dashboard server and class
 Server server(8000);
 Dashboard dashboardModule;
 
 // Declair an instance of the module
+Bed bed;
 TableLamp tableLamp;
 Door door;
 
 // Declair timers
 Timer doorLightTimer = Timer(5);
 Timer tableLampTimer = Timer(2);
+Timer bedTimer = Timer(10);
 
 // Declair the functions used in seperate threads.
 void fetcher();
@@ -36,12 +43,14 @@ void dashboard();
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
-  dashboardModule = Dashboard();
   // Create a new connection to the Wemos board.
+  dashboardModule = Dashboard();
+  Client bedClient(BED_MODULE, 8080);
   Client lampClient(LAMP_MODULE, 8080);
   Client doorClient(DOOR_MODULE, 8080);
 
   // Create a new module using the connection created above.
+  bed = Bed(bedClient);
   tableLamp = TableLamp(lampClient);
   door = Door(doorClient);
 
@@ -64,6 +73,7 @@ void fetcher()
     // Synchronize the object with the Wemos module
     tableLamp.fetch();
     door.fetch();
+    bed.fetch();
 
     // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
