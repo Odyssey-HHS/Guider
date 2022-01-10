@@ -1,27 +1,42 @@
+#define DASHBOARD_PORT
+
 #include <iostream>
 #include <ctime>
 #include <chrono>
 #include <thread>
 
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+
+#include "Server.h"
 #include "ModuleAddresses.h"
 #include "Door.h"
 #include "TableLamp.h"
 #include "Timer.h"
+#include "Dashboard.h"
+
+// Declair dashboard server and class
+Server server(8000);
+Dashboard dashboardModule;
 
 // Declair an instance of the module
 TableLamp tableLamp;
 Door door;
 
+// Declair timers
 Timer doorLightTimer = Timer(5);
 Timer tableLampTimer = Timer(2);
 
-// Declair the two functions used in seperate threads.
+// Declair the functions used in seperate threads.
 void fetcher();
 void logic();
+void dashboard();
 
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
+  dashboardModule = Dashboard();
   // Create a new connection to the Wemos board.
   Client lampClient(LAMP_MODULE, 8080);
   Client doorClient(DOOR_MODULE, 8080);
@@ -33,10 +48,12 @@ int main(int argc, char const *argv[])
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
   std::thread logicThread(logic);
+  std::thread dashboardThread(dashboard);
 
   // Close down the threads when they are finished.
   fetcherThread.join();
   logicThread.join();
+  dashboardThread.join();
 }
 
 /* Updates the module objects syncing them with the wemos hardware. */
@@ -54,6 +71,11 @@ void fetcher()
   }
 }
 
+int isNightTime(std::time_t current)
+{
+  return (localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
+}
+
 /* Execute logic functions, these manipulate the outputs of modules. */
 void logic()
 {
@@ -61,28 +83,33 @@ void logic()
   {
     std::time_t current = std::time(nullptr);
 
-    // Example door logic, this is just an example and should be cleaned up for use with multiple modules.
-    while (tableLamp.getLock())
+    // Table Lamp Logic, turns white on motion, otherwise it runs to the dashboard provided color.
+    while (tableLamp.getLock() || dashboardModule.getLock())
       ;
     tableLamp.lock();
-    if (tableLamp.getPirSensor())
+    dashboardModule.lock();
+
+    if (tableLamp.getPirSensor() && isNightTime(current))
     {
       tableLamp.setLed(255, 255, 255);
       tableLampTimer.start();
     }
-
-    if (tableLampTimer.finished())
+    else
     {
-      tableLamp.setLed(0, 0, 0);
+      if (tableLampTimer.finished() || !isNightTime(current))
+        tableLamp.setLed(dashboardModule.getLampColor());
     }
-    tableLamp.unlock();
 
-    // (Demo door logic)
-    while (door.getLock() && tableLamp.getLock())
+    tableLamp.unlock();
+    dashboardModule.unlock();
+
+    // Door Logic
+    while (door.getLock() || dashboardModule.getLock())
       ;
 
     door.lock();
-    tableLamp.lock();
+    dashboardModule.lock();
+
     if (door.getButtonIn())
     {
       door.setDoor(180).setLedIn(false).setLedOut(false);
@@ -90,24 +117,82 @@ void logic()
     }
     else if (door.getButtonOut())
     {
-      if (!(localtime(&current)->tm_hour >= 19 | localtime(&current)->tm_hour <= 6))
+      if (isNightTime(current))
       {
         door.setLedIn(true).setLedOut(true);
         doorLightTimer.start();
-        tableLamp.setLed(255, 0, 0);
-        tableLampTimer.start();
       }
     }
     else
     {
       door.setDoor(65);
     }
-    
+
     if (doorLightTimer.finished())
     {
       door.setLedIn(false).setLedOut(false);
     }
+
+    if (dashboardModule.getDoor())
+      door.setDoor(180);
     door.unlock();
-    tableLamp.unlock();
+    dashboardModule.unlock();
+  }
+}
+
+void dashboard()
+{
+  while (1)
+  {
+    std::cout << "Waiting for connection\n";
+    // Wait for client (blocking)
+    int socket_fd = server.awaitClient();
+
+    std::cout << "Connected!\n";
+
+    int receiveStatus = 0;
+
+    // Disconnect after message failure.
+    while (receiveStatus >= 0)
+    {
+      std::cout << "Waiting for message!\n";
+      // Wait for message (blocking)
+      char buffer[4096] = {0};
+      receiveStatus = server.receive(socket_fd, buffer, 4096);
+
+      // Parse a JSON string into DOM.
+      rapidjson::Document document;
+      document.Parse(buffer);
+
+      if (!document.IsObject())
+      {
+        std::cout << "Didn't recieve JSON! Closing connection\n";
+        receiveStatus = -1;
+        break;
+      }
+
+      while (dashboardModule.getLock())
+        ;
+      dashboardModule.lock();
+
+      if (document.HasMember("openDoor") && document["openDoor"].IsBool())
+      {
+        dashboardModule.setDoor(document["openDoor"].GetBool());
+      }
+
+      if (document.HasMember("lampColor") && document["lampColor"].IsInt())
+      {
+        dashboardModule.setLampColor(document["lampColor"].GetInt());
+      }
+
+      std::cout << "Recieved!  " << buffer << "\n";
+
+      server.send(socket_fd, dashboardModule.getJSON().c_str());
+      dashboardModule.unlock();
+    }
+
+    close(socket_fd);
+
+    receiveStatus = 0;
   }
 }

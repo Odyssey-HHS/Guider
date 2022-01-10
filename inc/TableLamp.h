@@ -12,9 +12,11 @@ public:
 
   void setInputsJSON(const std::string json);
   std::string getOutputsJSON() const;
+  std::string getInputsJSON() const;
 
   bool getPirSensor();
   TableLamp &setLed(const int red, const int green, const int blue);
+  TableLamp &setLed(const int rgb);
 
 private:
   bool pirSensor = false;
