@@ -9,6 +9,7 @@ class Dashboard {
         int getLampColor();
         Dashboard &setDoor(bool);
         Dashboard &setLampColor(int);
+        Dashboard &setMotionAlert(bool);
         std::string getJSON() const;
 
         bool getLock();
@@ -18,5 +19,6 @@ class Dashboard {
         bool openDoor = false;
         int lampColor = 0;
         bool lockFile = false;
+        bool motionAlert = false;
 };
 #endif
