@@ -43,7 +43,7 @@ void dashboard();
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
-  
+
   // Create a new connection to the Wemos board.
   dashboardModule = Dashboard();
   Client bedClient(BED_MODULE, 8080);
@@ -78,7 +78,7 @@ void fetcher()
 
     // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
-    //std::cout << "Fetching round...\n";
+    // std::cout << "Fetching round...\n";
   }
 }
 
@@ -148,6 +148,32 @@ void logic()
       door.setDoor(180);
     door.unlock();
     dashboardModule.unlock();
+
+    // Bed Logic
+    while (bed.getLock())
+      ;
+    if (bed.getps() >= 100)
+    {
+      bed.swp = bed.swc;
+
+      if (bed.getsw() == 1)
+      {
+        bed.swc = bed.getsw();
+      }
+      if (bed.getsw() == 0)
+      {
+        bed.swc = bed.getsw();
+      }
+      if (bed.swc == 0 && bed.swp == 1)
+      {
+        bed.setled(!bed.getLed());
+        bedTimer.start();
+      }
+      if (bedTimer.finished())
+      {
+        bed.setled(0);
+      }
+    }
   }
 }
 
