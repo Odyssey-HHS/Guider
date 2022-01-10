@@ -49,9 +49,17 @@ int main(int argc, char const *argv[])
   dashboardModule = Dashboard();
 
   // Create a new connection to the Wemos board.
+  std::cout << "Connecting to Chair.."
+            << "\n";
   Client chairClient(CHAIR_MODULE, 8080);
+  std::cout << "Connecting to Bed.."
+            << "\n";
   Client bedClient(BED_MODULE, 8080);
+  std::cout << "Connecting to Lamp.."
+            << "\n";
   Client lampClient(LAMP_MODULE, 8080);
+  std::cout << "Connecting to Door.."
+            << "\n";
   Client doorClient(DOOR_MODULE, 8080);
 
   // Create a new module using the connection created above.
@@ -77,20 +85,22 @@ void fetcher()
   while (1)
   {
     // Synchronize the object with the Wemos module
+    std::cout << "Fetching Chair...\n";
     chair.fetch();
+    std::cout << "Fetching TableLamp...\n";
     tableLamp.fetch();
+    std::cout << "Fetching Door...\n";
     door.fetch();
+    std::cout << "Fetching Bed...\n";
     bed.fetch();
 
-    // Sleep for a bit because we only have 2 module and we don't want to overload them.
-    usleep(100000);
-    std::cout << "Fetching round...\n";
+    std::cout << "Starting new fetching round...\n";
   }
 }
 
 int isNightTime(std::time_t current)
 {
-  return (localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
+  return !(localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
 }
 
 /* Execute logic functions, these manipulate the outputs of modules. */
