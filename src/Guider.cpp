@@ -33,6 +33,7 @@ Chair chair;
 Timer doorLightTimer = Timer(5);
 Timer tableLampTimer = Timer(2);
 Timer bedTimer = Timer(10);
+Timer chairToggleTimer = Timer(1);
 
 // Declair the functions used in seperate threads.
 void fetcher();
@@ -84,42 +85,25 @@ void logic()
 {
   while (1)
   {
+    // Chair logic
+    while (chair.getLock())
+      ;
 
-    if (chair.getSwitch())
+    chair.lock();
+    if (chair.getSwitch() && chair.getFsensor() > 100 && chairToggleTimer.finished())
     {
       chair.switchCurrent != chair.switchCurrent;
+      chairToggleTimer.start();
     }
 
-    chair.lock();
-    chair.setLed(false);
-    chair.unlock();
-
-    chair.lock();
-    chair.setMotor(false);
-    chair.unlock();
-
-    while (chair.switchCurrent)
-    {
-
-      // print value force sensor
-      std::cout << "ForceSensor: " << chair.getFsensor() << "\n";
-
-      // print value push button
-      std::cout << "button: " << chair.getSwitch() << "\n";
-
-      //
-      chair.lock();
-      chair.setLed(true);
-      chair.unlock();
-
-      chair.lock();
-      chair.setMotor(true);
-      chair.unlock();
+    if (chair.getFsensor() <= 100) {
+      chair.switchCurrent = false;
     }
+    std::cout << chair.switchCurrent << "\n";
 
-    bed.unlock();
-    tableLamp.unlock();
-    dashboardModule.unlock();
+    chair.setLed(chair.switchCurrent);
+    chair.setMotor(chair.switchCurrent);
+    chair.unlock();
   }
 }
 
