@@ -169,7 +169,6 @@ void logic()
           bedTimer.start();
         }
       }
-      bedTimer.start(); 
       if (bedTimer.finished()) 
       {
           bed.setled(0);
