@@ -1,5 +1,4 @@
 #include <iostream>
-
 #include "Column.h"
 #include "ModuleAddresses.h"
 #include <thread>
@@ -8,7 +7,7 @@
 using namespace std;
 
 // Declair an instance of the module
-Column testModule;
+Column column;
 
 // Declair the two functions used in seperate threads.
 void fetcher();
@@ -21,7 +20,7 @@ int main(int argc, char const *argv[])
   Client client(EXAMPLE_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  testModule = Column(client);
+  column = Column(client);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -38,7 +37,7 @@ void fetcher()
   while (1)
   {
     // Synchronize the object with the Wemos module
-    testModule.fetch();
+    column.fetch();
 
     // Sleep for a bit because we only have one module and we don't want to overload it.
     usleep(100000);
@@ -51,9 +50,10 @@ void logic()
   while (1)
   {
     // Bericht komt zodra er op de knop wordt gedrukt.
-    if (testModule.getButton())
+    if (column.getButton())
     {
-      cout << "DE ALARMKNOP IS INGEDRUKT. DE BEWONER IS IN NOOD" << endl;
+      //cout << "DE ALARMKNOP IS INGEDRUKT. DE BEWONER IS IN NOOD" << endl;
+      column.setLed(true);
     }
   }
 }

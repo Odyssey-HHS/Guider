@@ -19,21 +19,20 @@
  */
 
 #include <Wire.h>
-#include <Servo.h>
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <ArduinoWiFiServer.h>
 
-#define WIFI_SSID "3.1415"
-#define WIFI_PASSWD "YouShallNotPassword"
+#define WIFI_SSID "ALSTAR"
+#define WIFI_PASSWD "naisneneuro"
 #define PORT 8080
 #define ANALOG_IC_ADDR 0x36
 #define DIGITAL_IC_ADDR 0x38
 #define DIGITAL_IC_IN 0x00
 #define DIGITAL_IC_OUT 0x01
 
-const IPAddress local_IP(172, 16, 99, 100);
-const IPAddress gateway(172, 16, 99, 1);
+const IPAddress local_IP(192, 168, 31, 5);
+const IPAddress gateway(192, 168, 31, 4);
 const IPAddress subnet(255, 255, 255, 0);
 
 void configureDigitalIC();
@@ -70,8 +69,6 @@ void setup()
     // Start TCP Server
     server.begin();
     Serial.println("TCP Server started listening...");
-
-    Serial.end();
 }
 
 void loop()
@@ -80,8 +77,8 @@ void loop()
     handleConnections();
 
     int inputData = readDigitalInputs();
-
-    button = inputData == 13;
+    smokeSensor = readAnalogInput(0);
+    button = inputData & (1<<0);
 
     setDigitalOutput(4, buzzer);
     setDigitalOutput(5, led);

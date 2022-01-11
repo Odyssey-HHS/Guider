@@ -18,4 +18,6 @@ public:
 
   bool getButton();
   void setBuzzer(bool);
+  int getSmokeSensor();
+  void setLed(bool);
 };

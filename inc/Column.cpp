@@ -45,3 +45,8 @@ void Column::setBuzzer(bool input)
 {
   this->buzzer = input;
 }
+
+void Column::setLed(bool input)
+{
+  this->led = input;
+}
