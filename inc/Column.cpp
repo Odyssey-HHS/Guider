@@ -36,17 +36,61 @@ std::string Column::getOutputsJSON() const
   return output;
 }
 
+std::string Column::getInputsJSON() const
+{
+  rapidjson::Document document;
+  document.SetObject();
+
+  rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
+
+  document.AddMember("btn", this->button, allocator);
+  document.AddMember("smk", this->smokeSensor, allocator);
+
+  // Stringify object
+  rapidjson::StringBuffer buffer;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  document.Accept(writer);
+
+  std::string output = buffer.GetString();
+  return output;
+}
+
 bool Column::getButton()
 {
   return this->button;
 }
 
-void Column::setBuzzer(bool input)
+bool Column::getBuzzer()
 {
-  this->buzzer = input;
+  return this->buzzer;
 }
 
-void Column::setLed(bool input)
+bool Column::getLed()
 {
-  this->led = input;
+  return this->led;
+}
+
+int Column::getSmokeSensor()
+{
+  return this->smokeSensor;
+}
+
+Column &Column::setLed(bool val)
+{
+  if (led == val)
+  {
+    setUpdated(true);
+  }
+  led = val;
+  return *this;
+}
+
+Column &Column::setBuzzer(bool val)
+{
+  if (buzzer == val)
+  {
+    setUpdated(true);
+  }
+  buzzer = val;
+  return *this;
 }

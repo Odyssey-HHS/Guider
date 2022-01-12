@@ -1,5 +1,6 @@
 #include "Client.h"
 #include "Module.h"
+#include <iostream>
 
 class Column : public Module
 {
@@ -15,9 +16,13 @@ public:
 
   void setInputsJSON(const std::string json);
   std::string getOutputsJSON() const;
+  std::string getInputsJSON() const;
 
   bool getButton();
-  void setBuzzer(bool);
+  bool getBuzzer();
   int getSmokeSensor();
-  void setLed(bool);
+  bool getLed();
+
+  Column &setBuzzer(bool val);
+  Column &setLed(bool val);
 };

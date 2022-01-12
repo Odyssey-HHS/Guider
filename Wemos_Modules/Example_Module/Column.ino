@@ -24,7 +24,7 @@
 #include <ArduinoWiFiServer.h>
 
 #define WIFI_SSID "ALSTAR"
-#define WIFI_PASSWD "naisneneuro"
+#define WIFI_PASSWD "niceeeneuro"
 #define PORT 8080
 #define ANALOG_IC_ADDR 0x36
 #define DIGITAL_IC_ADDR 0x38
@@ -42,7 +42,6 @@ unsigned int readDigitalInputs();
 void setDigitalOutput(const int pin, const bool state);
 
 void readAnalogInput();
-
 void handleConnections();
 void connectWifi();
 
@@ -65,10 +64,13 @@ void setup()
     delay(1000);
 
     configureDigitalIC();
+    configureAnalogIC();
 
     // Start TCP Server
     server.begin();
     Serial.println("TCP Server started listening...");
+
+    Serial.end();
 }
 
 void loop()
@@ -78,10 +80,10 @@ void loop()
 
     int inputData = readDigitalInputs();
     smokeSensor = readAnalogInput(0);
-    button = inputData & (1<<0);
+    button = inputData & (1 << 0);
+    smokeSensor = inputData & (1 << 1);
 
-    setDigitalOutput(4, buzzer);
-    setDigitalOutput(5, led);
+    setDigitalOutput((led << 5) | (buzzer << 4));
 }
 
 void handleConnections()
@@ -121,11 +123,11 @@ unsigned int readDigitalInputs()
 }
 
 /* Set PCA9554 outputs (DIO4-DIO7) */
-void setDigitalOutput(int pin, bool state)
+void setDigitalOutput(byte digitalBuffer)
 {
     Wire.beginTransmission(DIGITAL_IC_ADDR); // Choose the PCA9554A
     Wire.write(byte(DIGITAL_IC_OUT));        // Hex adress 0x01 to set outputs (DIO4-DIO7) to 1 or 0
-    Wire.write(byte(state << pin));          // Set one of the output (DIO4-DIO7) to 1 or 0
+    Wire.write(digitalBuffer);               // Set one of the output (DIO4-DIO7) to 1 or 0
     Wire.endTransmission();                  // End I2C connection
 }
 
