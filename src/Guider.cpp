@@ -43,6 +43,8 @@ void fetcher();
 void logic();
 void dashboard();
 
+int socket_fd = 0;
+
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
@@ -81,6 +83,9 @@ void fetcher()
     tableLamp.fetch();
     door.fetch();
     bed.fetch();
+
+    server.send(socket_fd, dashboardModule.getJSON().c_str());
+
 
     // Sleep for a bit because we only have 2 module and we don't want to overload them.
     usleep(100000);
@@ -232,7 +237,7 @@ void dashboard()
   {
     std::cout << "Waiting for connection\n";
     // Wait for client (blocking)
-    int socket_fd = server.awaitClient();
+    socket_fd = server.awaitClient();
 
     std::cout << "Connected!\n";
 
@@ -277,8 +282,6 @@ void dashboard()
       }
 
       std::cout << "Recieved!  " << buffer << "\n";
-
-      server.send(socket_fd, dashboardModule.getJSON().c_str());
       dashboardModule.unlock();
     }
 
