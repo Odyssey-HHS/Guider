@@ -23,16 +23,16 @@
 #include <ESP8266WiFi.h>
 #include <ArduinoWiFiServer.h>
 
-#define WIFI_SSID "Alice"//"3.1415"
-#define WIFI_PASSWD "AliceNet"//"YouShallNotPassword"
+#define WIFI_SSID   "3.1415"
+#define WIFI_PASSWD "YouShallNotPassword"
 #define PORT 8080
 #define ANALOG_IC_ADDR 0x36
 #define DIGITAL_IC_ADDR 0x38
 #define DIGITAL_IC_IN 0x00
 #define DIGITAL_IC_OUT 0x01
 
-const IPAddress local_IP(192,168,4,2);//(172, 16, 99, 100);
-const IPAddress gateway(192,168,4,1);//(172, 16, 99, 1);
+const IPAddress local_IP(172, 16, 99, 102);
+const IPAddress gateway(172, 16, 99, 1);
 const IPAddress subnet(255, 255, 255, 0);
 
 void configureDigitalIC();
@@ -42,13 +42,12 @@ unsigned int readDigitalInputs();
 void setDigitalOutput(const int pin, const bool state);
 
 void readAnalogInput();
-void handleConnections();
+void handleConnections(WiFiClient client);
 void connectWifi();
-
 
 bool led = false;
 bool sw = false;
-int ps =0;
+int ps = 0;
 
 ArduinoWiFiServer server(PORT);
 
@@ -62,7 +61,6 @@ void setup()
     Wire.begin();
 
     delay(1000);
-
 
     configureDigitalIC();
 
@@ -80,34 +78,28 @@ void loop()
 
     int inputData = readDigitalInputs();
     //Serial.println(inputData);
-    sw = inputData & (1<<0);
+    sw = inputData & (1 << 0);
     setDigitalOutput(4, led);
     int ana = readAnalogInput(0);
     ps = ana;
     Serial.println(ana);
 }
 
-void handleConnections()
+void handleConnections(WiFiClient client)
 {
-    // Gets a client that is connected to the server and has data available for reading.
-    WiFiClient client = server.available();
+    String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
 
-    if (client) // Check if client has send a message, otherwise this is false.
-    {
-        String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
+    StaticJsonDocument<100> jsonIn;
+    deserializeJson(jsonIn, s);
+    led = jsonIn["Led"];
 
-        StaticJsonDocument<100> jsonIn;
-        deserializeJson(jsonIn, s);
-        led = jsonIn["Led"];
+    StaticJsonDocument<100> jsonOut;
+    jsonOut["Sw"] = sw;
+    jsonOut["PS"] = ps;
 
-        StaticJsonDocument<100> jsonOut;
-        jsonOut["Sw"] = sw;
-        jsonOut["PS"] = ps;
-
-        String output;
-        serializeJson(jsonOut, output);
-        client.print(output);
-    }
+    String output;
+    serializeJson(jsonOut, output);
+    client.print(output);
 }
 
 /* Read PCA9554 inputs (DIO0-DIO3) */
