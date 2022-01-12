@@ -96,7 +96,13 @@ void fetcher()
     std::cout << "Fetching Bed...\n";
     bed.fetch();
 
-    server.send(socket_fd, dashboardModule.getJSON().c_str());
+    if (dashboardModule.hasChanged())
+    {
+      std::cout << "Updating Dashboard...\n";
+      server.send(socket_fd, dashboardModule.getJSON().c_str());
+      dashboardModule.update();
+    }
+
     std::cout << "Starting new fetching round...\n";
   }
 }
