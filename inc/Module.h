@@ -25,7 +25,7 @@ public:
 
     void setUpdated(bool);
 
-    bool getUpdated(); 
+    bool getUpdated();
 
 private:
     Client connection;

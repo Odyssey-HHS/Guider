@@ -12,7 +12,8 @@ void TableLamp::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  if (this->pirSensor != document["pir"].GetBool()){
+  if (this->pirSensor != document["pir"].GetBool())
+  {
     setUpdated(true);
   }
 
@@ -63,7 +64,8 @@ bool TableLamp::getPirSensor()
 
 TableLamp &TableLamp::setLed(const int red, const int green, const int blue)
 {
-  if (this->led != (red << 16) + (green << 8) + blue){
+  if (this->led != (red << 16) + (green << 8) + blue)
+  {
     setUpdated(true);
   }
   this->led = (red << 16) + (green << 8) + blue;

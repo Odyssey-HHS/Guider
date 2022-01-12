@@ -25,7 +25,7 @@
 #include <ArduinoWiFiServer.h>
 #include <Adafruit_NeoPixel.h>
 
-#define WIFI_SSID   "3.1415"
+#define WIFI_SSID "3.1415"
 #define WIFI_PASSWD "YouShallNotPassword"
 #define PORT 8080
 #define DIGITAL_IC_ADDR 0x38

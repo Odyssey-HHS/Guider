@@ -12,7 +12,8 @@ void Door::setInputsJSON(const std::string json)
   document.Parse(json.c_str());
 
   if (this->buttonIn != document["btnI"].GetBool() ||
-  this->buttonOut != document["btnO"].GetBool()) {
+      this->buttonOut != document["btnO"].GetBool())
+  {
     setUpdated(true);
   }
 
@@ -61,7 +62,8 @@ std::string Door::getInputsJSON() const
 
 Door &Door::setLedIn(bool val)
 {
-  if (ledIn == val){
+  if (ledIn == val)
+  {
     setUpdated(true);
   }
   ledIn = val;
@@ -69,7 +71,8 @@ Door &Door::setLedIn(bool val)
 }
 Door &Door::setLedOut(bool val)
 {
-  if (ledOut == val){
+  if (ledOut == val)
+  {
     setUpdated(true);
   }
   ledOut = val;
@@ -77,7 +80,8 @@ Door &Door::setLedOut(bool val)
 }
 Door &Door::setDoor(int val)
 {
-  if (door == val){
+  if (door == val)
+  {
     setUpdated(true);
   }
   door = val;

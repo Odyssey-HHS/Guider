@@ -24,7 +24,7 @@
 #include <ESP8266WiFi.h>
 #include <ArduinoWiFiServer.h>
 
-#define WIFI_SSID   "3.1415"
+#define WIFI_SSID "3.1415"
 #define WIFI_PASSWD "YouShallNotPassword"
 #define PORT 8080
 #define ANALOG_IC_ADDR 0x36
