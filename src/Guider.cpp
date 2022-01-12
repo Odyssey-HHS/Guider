@@ -1,3 +1,8 @@
+// #define USE_DOOR
+// #define USE_CHAIR
+// #define USE_BED
+#define USE_TABLELAMP
+
 #define DASHBOARD_PORT
 
 #include <iostream>
@@ -50,27 +55,42 @@ int main(int argc, char const *argv[])
 {
   dashboardModule = Dashboard();
 
-  // Create a new connection to the Wemos board.
-  std::cout << "Connecting to Chair.."
-            << "\n";
+// Create a new connection to the Wemos board.
+#ifdef USE_CHAIR
+  std::cout << "Connecting to Chair..\n";
   Client chairClient(CHAIR_MODULE, 8080);
-  std::cout << "Connecting to Bed.."
-            << "\n";
+#endif
+
+#ifdef USE_BED
+  std::cout << "Connecting to Bed..\n";
   Client bedClient(BED_MODULE, 8080);
-  std::cout << "Connecting to Lamp.."
-            << "\n";
+#endif
+
+#ifdef USE_TABLELAMP
+  std::cout << "Connecting to Lamp..\n";
   Client lampClient(LAMP_MODULE, 8080);
-  std::cout << "Connecting to Door.."
-            << "\n";
+#endif
+
+#ifdef USE_DOOR
+  std::cout << "Connecting to Door..\n";
   Client doorClient(DOOR_MODULE, 8080);
+#endif
 
-  // Create a new module using the connection created above.
+// Create a new module using the connection created above.
+#ifdef USE_BED
   bed = Bed(bedClient);
+#endif
+#ifdef USE_TABLELAMP
   tableLamp = TableLamp(lampClient);
+#endif
+#ifdef USE_DOOR
   door = Door(doorClient);
+#endif
+#ifdef USE_CHAIR
   chair = Chair(chairClient);
+#endif
 
-  // Spin up the two threads.
+  // Spin up the threads.
   std::thread fetcherThread(fetcher);
   std::thread logicThread(logic);
   std::thread dashboardThread(dashboard);
@@ -86,15 +106,23 @@ void fetcher()
 {
   while (1)
   {
-    // Synchronize the object with the Wemos module
+// Synchronize the object with the Wemos module
+#ifdef USE_CHAIR
     std::cout << "Fetching Chair...\n";
     chair.fetch();
+#endif
+#ifdef USE_TABLELAMP
     std::cout << "Fetching TableLamp...\n";
     tableLamp.fetch();
+#endif
+#ifdef USE_DOOR
     std::cout << "Fetching Door...\n";
     door.fetch();
+#endif
+#ifdef USE_BED
     std::cout << "Fetching Bed...\n";
     bed.fetch();
+#endif
 
     if (dashboardModule.hasChanged())
     {
@@ -109,7 +137,7 @@ void fetcher()
 
 int isNightTime(std::time_t current)
 {
-  return !(localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
+  return (localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
 }
 
 /* Execute logic functions, these manipulate the outputs of modules. */
