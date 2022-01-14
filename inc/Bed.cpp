@@ -14,7 +14,7 @@ void Bed::setInputsJSON(const std::string json)
   document.Parse(json.c_str());
 
   this->sw = document["Sw"].GetBool();
-  //std::cout<<json<<std::endl;
+  // std::cout<<json<<std::endl;
   this->ps = document["PS"].GetInt64();
 }
 

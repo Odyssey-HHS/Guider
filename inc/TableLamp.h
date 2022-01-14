@@ -1,3 +1,6 @@
+#ifndef TABLELAMP_H
+#define TABLELAMP_H
+
 #include "Client.h"
 #include "Module.h"
 
@@ -9,11 +12,14 @@ public:
 
   void setInputsJSON(const std::string json);
   std::string getOutputsJSON() const;
+  std::string getInputsJSON() const;
 
   bool getPirSensor();
   TableLamp &setLed(const int red, const int green, const int blue);
+  TableLamp &setLed(const int rgb);
 
 private:
   bool pirSensor = false;
   int led = 0;
 };
+#endif // TABLELAMP_H

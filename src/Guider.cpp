@@ -17,8 +17,9 @@
 #include "Dashboard.h"
 #include "Door.h"
 #include "TableLamp.h"
+#include "Chair.h"
 #include "Bed.h"
-#include "Wall.h"
+
 #include "Timer.h"
 
 // Declair dashboard server and class
@@ -26,15 +27,16 @@ Server server(8000);
 Dashboard dashboardModule;
 
 // Declair an instance of the module
+Chair chair;
 Bed bed;
 TableLamp tableLamp;
 Door door;
-wall Wall;
 
 // Declair timers
 Timer doorLightTimer = Timer(5);
 Timer tableLampTimer = Timer(2);
 Timer bedTimer = Timer(10);
+Timer chairToggleTimer = Timer(1);
 
 // Declair the functions used in seperate threads.
 void fetcher();
@@ -44,18 +46,27 @@ void dashboard();
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
-  // Create a new connection to the Wemos board.
   dashboardModule = Dashboard();
+
+  // Create a new connection to the Wemos board.
+  std::cout << "Connecting to Chair.."
+            << "\n";
+  Client chairClient(CHAIR_MODULE, 8080);
+  std::cout << "Connecting to Bed.."
+            << "\n";
   Client bedClient(BED_MODULE, 8080);
+  std::cout << "Connecting to Lamp.."
+            << "\n";
   Client lampClient(LAMP_MODULE, 8080);
+  std::cout << "Connecting to Door.."
+            << "\n";
   Client doorClient(DOOR_MODULE, 8080);
-  Client WallClient(WALL_MODULE, 8080);
 
   // Create a new module using the connection created above.
   bed = Bed(bedClient);
   tableLamp = TableLamp(lampClient);
   door = Door(doorClient);
-  Wall = wall(WallClient);
+  chair = Chair(chairClient);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -74,20 +85,23 @@ void fetcher()
   while (1)
   {
     // Synchronize the object with the Wemos module
+    std::cout << "Fetching Chair...\n";
+    chair.fetch();
+    std::cout << "Fetching TableLamp...\n";
     tableLamp.fetch();
+    std::cout << "Fetching Door...\n";
     door.fetch();
+    std::cout << "Fetching Bed...\n";
     bed.fetch();
     Wall.fetch();
 
-    // Sleep for a bit because we only have 2 module and we don't want to overload them.
-    usleep(100000);
-    std::cout << "Fetching round...\n";
+    std::cout << "Starting new fetching round...\n";
   }
 }
 
 int isNightTime(std::time_t current)
 {
-  return (localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
+  return !(localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
 }
 
 /* Execute logic functions, these manipulate the outputs of modules. */
@@ -97,7 +111,7 @@ void logic()
   {
     std::time_t current = std::time(nullptr);
 
-    /*// Table Lamp Logic, turns white on motion, otherwise it runs to the dashboard provided color.
+    // Table Lamp Logic, turns white on motion, otherwise it runs to the dashboard provided color.
     while (tableLamp.getLock() || dashboardModule.getLock())
       ;
     tableLamp.lock();
@@ -198,18 +212,28 @@ void logic()
 
     bed.unlock();
     tableLamp.unlock();
-    dashboardModule.unlock();*/
-    
-    // logic Wall
-    while (Wall.getLock())
+    dashboardModule.unlock();
+
+    // Chair logic
+    while (chair.getLock())
       ;
-    Wall.lock();
-    if((Wall.getlightSen() >= 700) && (isNightime(current)))
+
+    chair.lock();
+    if (chair.getSwitch() && chair.getFsensor() > 100 && chairToggleTimer.finished())
     {
-      Wall.setshadePan(1);
+      chair.switchCurrent = !chair.switchCurrent;
+      chairToggleTimer.start();
+      std::cout << chair.switchCurrent << "\n";
     }
-    Wall.setledStrip() = Wall.getpotMeter() / 4; 
-    Wall.unlock(); 
+
+    if (chair.getFsensor() <= 100)
+    {
+      chair.switchCurrent = false;
+    }
+
+    chair.setLed(chair.switchCurrent);
+    chair.setMotor(chair.switchCurrent);
+    chair.unlock();
   }
 }
 
