@@ -7,20 +7,20 @@ private:
 int shadePan;
 int lightSen;
 int potMeter;
-int ledStrip;
+int ledStrip = 255;
 
 public:
   wall();
   wall(Client client);
-  void setlcd(bool val)
+  void setshadePan(bool val)
   {
       shadePan = val;
   }
-  int getshadepanal()
+  int getlightsen()
   {
       return lightSen;
   }
-  int getpot()
+  int getpotMeter()
   {
       return potMeter;
   }
