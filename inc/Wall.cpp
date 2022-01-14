@@ -3,10 +3,10 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-wall::wall() : Module(Client()) {}
-wall::wall(Client client) : Module(client) {}
+Wall::Wall() : Module(Client()) {}
+Wall::Wall(Client client) : Module(client) {}
 
-void wall::setInputsJSON(const std::string json)
+void Wall::setInputsJSON(const std::string json)
 {
   // 1. Parse a JSON string into DOM.
   rapidjson::Document document;
@@ -16,7 +16,7 @@ void wall::setInputsJSON(const std::string json)
   this->potMeter = document["ptm"].GetInt();
 }
 
-std::string wall::getOutputsJSON() const
+std::string Wall::getOutputsJSON() const
 {
   // Create JSON object.
   rapidjson::Document document;

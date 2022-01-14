@@ -19,6 +19,7 @@
 #include "TableLamp.h"
 #include "Chair.h"
 #include "Bed.h"
+#include "Wall.h"
 
 #include "Timer.h"
 
@@ -31,6 +32,7 @@ Chair chair;
 Bed bed;
 TableLamp tableLamp;
 Door door;
+Wall wall;
 
 // Declair timers
 Timer doorLightTimer = Timer(5);
@@ -61,12 +63,16 @@ int main(int argc, char const *argv[])
   std::cout << "Connecting to Door.."
             << "\n";
   Client doorClient(DOOR_MODULE, 8080);
+   std::cout << "Connecting to Wall.."
+            << "\n";
+  Client wallClient(WALL_MODULE, 8080);
 
   // Create a new module using the connection created above.
   bed = Bed(bedClient);
   tableLamp = TableLamp(lampClient);
   door = Door(doorClient);
   chair = Chair(chairClient);
+  wall = Wall(wallClient);
 
   // Spin up the two threads.
   std::thread fetcherThread(fetcher);
@@ -93,7 +99,8 @@ void fetcher()
     door.fetch();
     std::cout << "Fetching Bed...\n";
     bed.fetch();
-    Wall.fetch();
+    std::cout << "Fetching Wall...\n";
+    wall.fetch();
 
     std::cout << "Starting new fetching round...\n";
   }
@@ -234,6 +241,17 @@ void logic()
     chair.setLed(chair.switchCurrent);
     chair.setMotor(chair.switchCurrent);
     chair.unlock();
+
+    // Wall logic
+    while (wall.getLock())
+      ;
+    wall.lock();
+    if((wall.getLightSen() >= 700) && (isNightTime(current)))
+    {
+      wall.setShadePan(1);
+    }
+    wall.setLedStrip(wall.getPotMeter() / 4);
+    wall.unlock();  
   }
 }
 

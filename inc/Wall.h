@@ -1,7 +1,7 @@
 #include "Client.h"
 #include "Module.h"
 
-class wall : public Module
+class Wall : public Module
 {
 private:
 int shadePan;
@@ -10,21 +10,21 @@ int potMeter;
 int ledStrip = 255;
 
 public:
-  wall();
-  wall(Client client);
-  void setshadePan(bool val)
+  Wall();
+  Wall(Client client);
+  void setShadePan(bool val)
   {
       shadePan = val;
   }
-  int getlightsen()
+  int getLightSen()
   {
       return lightSen;
   }
-  int getpotMeter()
+  int getPotMeter()
   {
       return potMeter;
   }
-  void setledStrip(int brightness)
+  void setLedStrip(int brightness)
   {
     ledStrip = brightness;
   }
