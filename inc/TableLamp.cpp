@@ -12,12 +12,8 @@ void TableLamp::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  if (this->pirSensor != document["pir"].GetBool())
-  {
-    setUpdated(true);
-  }
-
-  this->pirSensor = document["pir"].GetBool();
+  if (document.HasMember("pir") && document["pir"].IsBool())
+    this->pirSensor = document["pir"].GetBool();
 }
 
 std::string TableLamp::getOutputsJSON() const

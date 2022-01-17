@@ -13,8 +13,11 @@ void Chair::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  this->Switch = document["btnC"].GetBool();
-  this->Fsensor = document["fsCh"].GetInt64();
+  if (document.HasMember("btnC") && document["btnC"].IsBool())
+    this->Switch = document["btnC"].GetBool();
+
+  if (document.HasMember("fsCh") && document["fsCh"].IsInt64())
+    this->Fsensor = document["fsCh"].GetInt64();
 }
 
 std::string Chair::getOutputsJSON() const

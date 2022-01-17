@@ -1,6 +1,6 @@
-// #define USE_DOOR
-// #define USE_CHAIR
-// #define USE_BED
+#define USE_DOOR
+#define USE_CHAIR
+#define USE_BED
 #define USE_TABLELAMP
 
 #define DASHBOARD_PORT
@@ -137,7 +137,7 @@ void fetcher()
 
 int isNightTime(std::time_t current)
 {
-  return (localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
+  return !(localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
 }
 
 /* Execute logic functions, these manipulate the outputs of modules. */
@@ -259,7 +259,6 @@ void logic()
     {
       chair.switchCurrent = !chair.switchCurrent;
       chairToggleTimer.start();
-      std::cout << chair.switchCurrent << "\n";
     }
 
     if (chair.getFsensor() <= 100)
