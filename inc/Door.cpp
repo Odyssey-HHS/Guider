@@ -11,6 +11,8 @@ void Door::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
+  if (!document.IsObject()) return;
+
   if (document.HasMember("btnI") && document["btnI"].IsBool())
     this->buttonIn = document["btnI"].GetBool();
 

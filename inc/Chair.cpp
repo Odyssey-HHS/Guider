@@ -13,6 +13,8 @@ void Chair::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
+  if (!document.IsObject()) return;
+
   if (document.HasMember("btnC") && document["btnC"].IsBool())
     this->Switch = document["btnC"].GetBool();
 
