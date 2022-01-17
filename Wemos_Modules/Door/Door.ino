@@ -19,36 +19,41 @@
  */
 
 #include <Wire.h>
+#include <Servo.h>
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <ArduinoWiFiServer.h>
 
-#define WIFI_SSID "ALSTAR"
-#define WIFI_PASSWD "niceeeneuro"
+#define WIFI_SSID "G41C control node"
+#define WIFI_PASSWD "g41cstandsforgalc"
 #define PORT 8080
 #define ANALOG_IC_ADDR 0x36
 #define DIGITAL_IC_ADDR 0x38
 #define DIGITAL_IC_IN 0x00
 #define DIGITAL_IC_OUT 0x01
 
-const IPAddress local_IP(192, 168, 31, 5);
-const IPAddress gateway(192, 168, 31, 4);
+const IPAddress local_IP(172, 16, 99, 100);
+const IPAddress gateway(172, 16, 99, 1);
 const IPAddress subnet(255, 255, 255, 0);
 
 void configureDigitalIC();
 void configureAnalogIC();
 
 unsigned int readDigitalInputs();
-void setDigitalOutput(byte digitalBuffer);
+void setDigitalOutput(const int pin, const bool state);
 
-void readAnalogInputs(const int ANALOG_CH, unsigned int *analog1, unsigned int *analog2);
+void readAnalogInput();
 void handleConnections();
 void connectWifi();
 
-bool button = false;
-bool led = false;
-bool buzzer = false;
-int smokeSensor = 0;
+Servo doorServo;
+
+bool buttonOutside = false;
+bool buttonInside = false;
+bool ledInside = false;
+bool ledOutside = false;
+int door = 0;
+byte digitalBuffer = 0;
 
 ArduinoWiFiServer server(PORT);
 
@@ -63,14 +68,17 @@ void setup()
 
     delay(1000);
 
+    // Use pin d5 as servo output
+    doorServo.attach(D5);
+    pinMode(D5, OUTPUT);
+
     configureDigitalIC();
-    configureAnalogIC();
 
     // Start TCP Server
     server.begin();
     Serial.println("TCP Server started listening...");
 
-    // Serial.end();
+    Serial.end();
 }
 
 void loop()
@@ -79,11 +87,12 @@ void loop()
     handleConnections();
 
     int inputData = readDigitalInputs();
-    smokeSensor = readAnalogInput(0);
-    button = inputData & (1 << 0);
-    smokeSensor = inputData & (1 << 1);
+    buttonOutside = inputData & (1 << 0);
+    buttonInside = inputData & (1 << 1);
 
-    setDigitalOutput((led << 5) | (buzzer << 4));
+    setDigitalOutput((ledInside << 5) | (ledOutside << 4));
+
+    doorServo.write(door);
 }
 
 void handleConnections()
@@ -91,18 +100,19 @@ void handleConnections()
     // Gets a client that is connected to the server and has data available for reading.
     WiFiClient client = server.available();
 
-    if (client) // Check if client has send a message, otherwise this is false.
+    if (client) // Check if client has sent a message, otherwise this is false.
     {
-        String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
+        String s = client.readStringUntil('}'); // read untill the end of a json request
 
         StaticJsonDocument<100> jsonIn;
         deserializeJson(jsonIn, s);
-        led = jsonIn["ld"];
-        buzzer = jsonIn["bz"];
+        door = jsonIn["door"];
+        ledInside = jsonIn["ledI"];
+        ledOutside = jsonIn["ledO"];
 
         StaticJsonDocument<100> jsonOut;
-        jsonOut["btn"] = button;
-        jsonOut["smk"] = smokeSensor;
+        jsonOut["btnO"] = buttonOutside;
+        jsonOut["btnI"] = buttonInside;
 
         String output;
         serializeJson(jsonOut, output);
@@ -140,37 +150,16 @@ void configureDigitalIC()
     Wire.endTransmission();                  // End I2C connection
 }
 
-/* Config MAX11647 Analog inputs */
-void configureAnalogIC()
-{
-    Wire.beginTransmission(ANALOG_IC_ADDR); // Choose the MAX11647
-    Wire.write(byte(0xA2));                 // set-up byte
-    Wire.write(byte(0x03));                 // configuration byte
-    Wire.endTransmission();                 // End I2C connection
-}
-
-/* Read the analog channels of the MAX11647 */
-void readAnalogInputs(const int ANALOG_CH, unsigned int *analog1, unsigned int *analog2)
-{
-    Wire.requestFrom(ANALOG_CH, 4);
-    *analog1 = Wire.read() & 0x03;
-    *analog1 = *analog1 << 8;
-    *analog1 = *analog1 | Wire.read();
-    *analog2 = Wire.read() & 0x03;
-    *analog2 = *analog2 << 8;
-    *analog2 = *analog2 | Wire.read();
-}
-
 void connectWifi()
 {
     Serial.print("Connecting to ");
     Serial.println(WIFI_SSID);
 
     // Configure static IP.
-    /*if (!WiFi.config(local_IP, gateway, subnet))
+    if (!WiFi.config(local_IP, gateway, subnet))
     {
         Serial.println("STA Failed to configure");
-    }*/
+    }
 
     // Start connecting to the WiFi
     WiFi.begin(WIFI_SSID, WIFI_PASSWD);
