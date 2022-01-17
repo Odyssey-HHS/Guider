@@ -1,8 +1,15 @@
+<<<<<<< HEAD
 //#define USE_DOOR
 //#define USE_CHAIR
 //#define USE_BED
 //#define USE_TABLELAMP
 #define USE_WALL
+=======
+#define USE_DOOR
+//#define USE_CHAIR
+#define USE_BED
+//#define USE_TABLELAMP
+>>>>>>> main
 
 #define DASHBOARD_PORT
 
@@ -195,6 +202,7 @@ void logic()
     }
     else if (door.getButtonOut())
     {
+      dashboardModule.setFireAlert(true);
       if (isNightTime(current))
       {
         door.setLedIn(true).setLedOut(true);
@@ -242,6 +250,10 @@ void logic()
         bed.setled(0);
       }
     }
+    else if (!isNightTime(current)) 
+    {
+      bed.setled(0);
+    } 
     else if (!bedTimer.finished())
     {
       bedTimer.start();
@@ -349,6 +361,11 @@ void dashboard()
       if (document.HasMember("motionAlert") && document["motionAlert"].IsBool())
       {
         dashboardModule.setMotionAlert(document["motionAlert"].GetBool());
+      }
+
+      if (document.HasMember("fireAlert") && document["fireAlert"].IsBool())
+      {
+        dashboardModule.setFireAlert(document["fireAlert"].GetBool());
       }
 
       if (document.HasMember("fnt") && document["fnt"].IsBool())
