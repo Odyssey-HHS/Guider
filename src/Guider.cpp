@@ -137,7 +137,7 @@ void fetcher()
 
 int isNightTime(std::time_t current)
 {
-  return !(localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
+  return (localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
 }
 
 /* Execute logic functions, these manipulate the outputs of modules. */

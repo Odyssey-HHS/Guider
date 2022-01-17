@@ -33,10 +33,22 @@ int Dashboard::getLampColor()
     return this->lampColor;
 }
 
+bool Dashboard::getForceNightTime()
+{
+    return this->forceNightTime;
+}
+
 Dashboard &Dashboard::setDoor(bool val)
 {
     this->changed = true;
     this->openDoor = val;
+    return *this;
+}
+
+Dashboard &Dashboard::setForceNightTime(bool val)
+{
+    this->changed = true;
+    this->forceNightTime = val;
     return *this;
 }
 
