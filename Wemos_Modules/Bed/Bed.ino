@@ -80,7 +80,9 @@ void loop()
     {
         int inputData = readDigitalInputs();
         sw |= inputData & (1 << 0);
-        int ps = readAnalogInput(0);
+        ps = readAnalogInput(0);
+
+        Serial.println(ps);
 
         // Check if client has send a message, otherwise this is false.
         if (client)
