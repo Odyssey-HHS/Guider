@@ -23,8 +23,8 @@
 #include <ESP8266WiFi.h>
 #include <ArduinoWiFiServer.h>
 
-#define WIFI_SSID "3.1415"                //ALSTAR
-#define WIFI_PASSWD "YouShallNotPassword" //niceeeneuro
+#define WIFI_SSID "ALSTAR"        //ALSTAR 3.1415
+#define WIFI_PASSWD "niceeeneuro" //niceeeneuro YouShallNotPassword
 #define PORT 8080
 #define ANALOG_IC_ADDR 0x36
 #define DIGITAL_IC_ADDR 0x38
@@ -70,20 +70,31 @@ void setup()
     server.begin();
     Serial.println("TCP Server started listening...");
 
-    // Serial.end();
+    Serial.end();
 }
 
 void loop()
 {
-    // Handle clients sending request to the TCP server.
-    handleConnections();
+    WiFiClient client = server.available();
 
-    int inputData = readDigitalInputs();
-    smokeSensor = readAnalogInput(0);
-    button = inputData & (1 << 0);
-    smokeSensor = inputData & (1 << 1);
+    // Don't check for an available client while we still know an connected client.
+    while (client.connected())
+    {
+        int inputData = readDigitalInputs();
+        smokeSensor = readAnalogInput(0);
+        button = inputData & (1 << 0);
+        smokeSensor = inputData & (1 << 1);
 
-    setDigitalOutput((led << 5) | (buzzer << 4));
+        // Check if client has send a message, otherwise this is false.
+        if (client)
+        {
+            // Handle clients sending request to the TCP server.
+            handleConnections(client);
+            setDigitalOutput((led << 5) | (buzzer << 4));
+
+            doorServo.write(door);
+        }
+    }
 }
 
 void handleConnections()
@@ -166,11 +177,11 @@ void connectWifi()
     Serial.print("Connecting to ");
     Serial.println(WIFI_SSID);
 
-    // Configure static IP.
-    /*if (!WiFi.config(local_IP, gateway, subnet))
+    //Configure static IP.
+    if (!WiFi.config(local_IP, gateway, subnet))
     {
         Serial.println("STA Failed to configure");
-    }*/
+    }
 
     // Start connecting to the WiFi
     WiFi.begin(WIFI_SSID, WIFI_PASSWD);

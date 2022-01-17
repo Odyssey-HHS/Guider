@@ -1,7 +1,7 @@
-#define USE_DOOR
-#define USE_CHAIR
-#define USE_BED
-#define USE_TABLELAMP
+//#define USE_DOOR
+//#define USE_CHAIR
+//#define USE_BED
+//#define USE_TABLELAMP
 #define USE_COLUMN
 
 #define DASHBOARD_PORT
@@ -34,7 +34,6 @@
 Server server(8000);
 Dashboard dashboardModule;
 
-using namespace std;
 // Declare an instance of the module
 Column column;
 Chair chair;
@@ -170,14 +169,15 @@ void logic()
       ;
     column.lock();
     dashboardModule.lock();
+    
     if (column.getButton())
     {
-      cout << "DE ALARMKNOP IS INGEDRUKT! DE BEWONER IS IN NOOD!" << endl;
+      std::cout << "DE ALARMKNOP IS INGEDRUKT! DE BEWONER IS IN NOOD!" << std::endl;
       column.setLed(true);
     }
     if (column.getBuzzer() > 50)
     {
-      cout << "ER IS BRAND!" << endl;
+      std::cout << "ER IS BRAND!" << std::endl;
       for (int i = 0; i < 3; i++)
       {
         column.setBuzzer(true);
