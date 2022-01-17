@@ -322,6 +322,11 @@ void dashboard()
         dashboardModule.setMotionAlert(document["motionAlert"].GetBool());
       }
 
+      if (document.HasMember("fnt") && document["fnt"].IsBool())
+      {
+        dashboardModule.setForceNightTime(document["fnt"].GetBool());
+      }
+
       std::cout << "Recieved!  " << buffer << "\n";
       dashboardModule.unlock();
     }
