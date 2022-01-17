@@ -51,27 +51,27 @@ int main(int argc, char const *argv[])
   dashboardModule = Dashboard();
 
   // Create a new connection to the Wemos board.
-  std::cout << "Connecting to Chair.."
-            << "\n";
-  Client chairClient(CHAIR_MODULE, 8080);
-  std::cout << "Connecting to Bed.."
-            << "\n";
-  Client bedClient(BED_MODULE, 8080);
-  std::cout << "Connecting to Lamp.."
-            << "\n";
-  Client lampClient(LAMP_MODULE, 8080);
-  std::cout << "Connecting to Door.."
-            << "\n";
-  Client doorClient(DOOR_MODULE, 8080);
+  // std::cout << "Connecting to Chair.."
+  //           << "\n";
+  // Client chairClient(CHAIR_MODULE, 8080);
+  // std::cout << "Connecting to Bed.."
+  //           << "\n";
+  // Client bedClient(BED_MODULE, 8080);
+  // std::cout << "Connecting to Lamp.."
+  //           << "\n";
+  // Client lampClient(LAMP_MODULE, 8080);
+  // std::cout << "Connecting to Door.."
+  //           << "\n";
+  // Client doorClient(DOOR_MODULE, 8080);
    std::cout << "Connecting to Wall.."
             << "\n";
   Client wallClient(WALL_MODULE, 8080);
 
   // Create a new module using the connection created above.
-  bed = Bed(bedClient);
-  tableLamp = TableLamp(lampClient);
-  door = Door(doorClient);
-  chair = Chair(chairClient);
+  // bed = Bed(bedClient);
+  // tableLamp = TableLamp(lampClient);
+  // door = Door(doorClient);
+  // chair = Chair(chairClient);
   wall = Wall(wallClient);
 
   // Spin up the two threads.
@@ -91,18 +91,18 @@ void fetcher()
   while (1)
   {
     // Synchronize the object with the Wemos module
-    std::cout << "Fetching Chair...\n";
-    chair.fetch();
-    std::cout << "Fetching TableLamp...\n";
-    tableLamp.fetch();
-    std::cout << "Fetching Door...\n";
-    door.fetch();
-    std::cout << "Fetching Bed...\n";
-    bed.fetch();
-    std::cout << "Fetching Wall...\n";
+    // std::cout << "Fetching Chair...\n";
+    // chair.fetch();
+    // std::cout << "Fetching TableLamp...\n";
+    // tableLamp.fetch();
+    // std::cout << "Fetching Door...\n";
+    // door.fetch();
+    // std::cout << "Fetching Bed...\n";
+    // bed.fetch();
+    //std::cout << "Fetching Wall...\n";
     wall.fetch();
 
-    std::cout << "Starting new fetching round...\n";
+    //std::cout << "Starting new fetching round...\n";
   }
 }
 
@@ -246,9 +246,13 @@ void logic()
     while (wall.getLock())
       ;
     wall.lock();
-    if((wall.getLightSen() >= 700) && (isNightTime(current)))
+    if(wall.getLightSen() <= 600)// && (isNightTime(current)))
     {
       wall.setShadePan(1);
+    }
+    else
+    {
+      wall.setShadePan(0);
     }
     wall.setLedStrip(wall.getPotMeter() / 4);
     wall.unlock();  
