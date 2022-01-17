@@ -1,7 +1,7 @@
 #define USE_DOOR
-#define USE_CHAIR
+//#define USE_CHAIR
 #define USE_BED
-#define USE_TABLELAMP
+//#define USE_TABLELAMP
 
 #define DASHBOARD_PORT
 
@@ -228,6 +228,10 @@ void logic()
         bed.setled(0);
       }
     }
+    else if (!isNightTime(current)) 
+    {
+      bed.setled(0);
+    } 
     else if (!bedTimer.finished())
     {
       bedTimer.start();
