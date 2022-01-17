@@ -1,7 +1,8 @@
-#define USE_DOOR
+//#define USE_DOOR
 //#define USE_CHAIR
-#define USE_BED
+//#define USE_BED
 //#define USE_TABLELAMP
+#define USE_WALL
 
 #define DASHBOARD_PORT
 
@@ -24,6 +25,7 @@
 #include "TableLamp.h"
 #include "Chair.h"
 #include "Bed.h"
+#include "Wall.h"
 
 #include "Timer.h"
 
@@ -36,6 +38,7 @@ Chair chair;
 Bed bed;
 TableLamp tableLamp;
 Door door;
+Wall wall;
 
 // Declair timers
 Timer doorLightTimer = Timer(5);
@@ -75,6 +78,10 @@ int main(int argc, char const *argv[])
   std::cout << "Connecting to Door..\n";
   Client doorClient(DOOR_MODULE, 8080);
 #endif
+#ifdef USE_WALL
+  std::cout << "Connecting to Wall..\n";
+  Client wallClient(WALL_MODULE, 8080);
+#endif
 
 // Create a new module using the connection created above.
 #ifdef USE_BED
@@ -88,6 +95,9 @@ int main(int argc, char const *argv[])
 #endif
 #ifdef USE_CHAIR
   chair = Chair(chairClient);
+#endif
+#ifdef USE_WALL
+  wall = Wall(wallClient);
 #endif
 
   // Spin up the threads.
@@ -122,6 +132,10 @@ void fetcher()
 #ifdef USE_BED
     std::cout << "Fetching Bed...\n";
     bed.fetch();
+#endif
+#ifdef USE_WALL
+    std::cout << "Fetching Wall...\n";
+    wall.fetch();
 #endif
 
     if (dashboardModule.hasChanged())
@@ -274,6 +288,21 @@ void logic()
     chair.setLed(chair.switchCurrent);
     chair.setMotor(chair.switchCurrent);
     chair.unlock();
+
+    // Wall logic
+    while (wall.getLock())
+      ;
+    wall.lock();
+    if(wall.getLightSen() <= 600)// && (isNightTime(current)))
+    {
+      wall.setShadePan(1);
+    }
+    else
+    {
+      wall.setShadePan(0);
+    }
+    wall.setLedStrip(wall.getPotMeter() / 4);
+    wall.unlock();  
   }
 }
 
