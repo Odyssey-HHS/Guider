@@ -13,9 +13,15 @@ void Bed::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  this->sw = document["Sw"].GetBool();
-  // std::cout<<json<<std::endl;
-  this->ps = document["PS"].GetInt64();
+  if (document.HasMember("Sw") && document["Sw"].IsBool())
+  {
+    this->sw = document["Sw"].GetBool();
+  }
+
+  if (document.HasMember("PS") && document["PS"].IsInt64())
+  {
+    this->ps = document["PS"].GetInt64();
+  }
 }
 
 std::string Bed::getOutputsJSON() const
