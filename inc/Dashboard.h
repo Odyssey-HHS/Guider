@@ -11,6 +11,7 @@ public:
     Dashboard &setDoor(bool);
     Dashboard &setLampColor(int);
     Dashboard &setMotionAlert(bool);
+    Dashboard &setFireAlert(bool);
     Dashboard &setForceNightTime(bool);
     std::string getJSON() const;
     Dashboard &update();
@@ -27,6 +28,7 @@ private:
     int lampColor = 0;
     bool lockFile = false;
     bool motionAlert = false;
+    bool fireAlert = false;
     bool changed = false;
 };
 #endif

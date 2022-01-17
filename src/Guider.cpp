@@ -181,6 +181,7 @@ void logic()
     }
     else if (door.getButtonOut())
     {
+      dashboardModule.setFireAlert(true);
       if (isNightTime(current))
       {
         door.setLedIn(true).setLedOut(true);
@@ -324,6 +325,11 @@ void dashboard()
       if (document.HasMember("motionAlert") && document["motionAlert"].IsBool())
       {
         dashboardModule.setMotionAlert(document["motionAlert"].GetBool());
+      }
+
+      if (document.HasMember("fireAlert") && document["fireAlert"].IsBool())
+      {
+        dashboardModule.setFireAlert(document["fireAlert"].GetBool());
       }
 
       if (document.HasMember("fnt") && document["fnt"].IsBool())
