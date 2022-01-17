@@ -44,7 +44,7 @@ void configureDigitalIC();
 unsigned int readDigitalInputs();
 void setDigitalOutput(const int pin, const bool state);
 
-void handleConnections();
+void handleConnections(WiFiClient client);
 void connectWifi();
 
 bool pirSensor = false;
@@ -76,41 +76,46 @@ void setup()
 
 void loop()
 {
-  // Handle clients sending request to the TCP server.
-  handleConnections();
+  WiFiClient client = server.available();
 
-  int inputData = readDigitalInputs();
-
-  pirSensor = inputData == 15;
-
-  if (rgb0history != rgb0)
+  // Don't check for an available client while we still know an connected client.
+  while (client.connected())
   {
-    pixels.setPixelColor(0, rgb0);
-    pixels.show();
-    rgb0history = rgb0;
+    int inputData = readDigitalInputs();
+    pirSensor |= inputData == 15;
+
+    // Check if client has send a message, otherwise this is false.
+    if (client)
+    {
+      // Handle clients sending request to the TCP server.
+      handleConnections(client);
+
+      if (rgb0history != rgb0)
+      {
+        pixels.setPixelColor(0, rgb0);
+        pixels.show();
+        rgb0history = rgb0;
+      }
+    }
   }
 }
 
-void handleConnections()
+void handleConnections(WiFiClient client)
 {
-  // Gets a client that is connected to the server and has data available for reading.
-  WiFiClient client = server.available();
+  String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
 
-  if (client) // Check if client has send a message, otherwise this is false.
-  {
-    String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
+  StaticJsonDocument<100> jsonIn;
+  deserializeJson(jsonIn, s);
+  rgb0 = jsonIn["rgb0"];
 
-    StaticJsonDocument<100> jsonIn;
-    deserializeJson(jsonIn, s);
-    rgb0 = jsonIn["rgb0"];
+  StaticJsonDocument<100> jsonOut;
+  jsonOut["pir"] = pirSensor;
 
-    StaticJsonDocument<100> jsonOut;
-    jsonOut["pir"] = pirSensor;
+  String output;
+  serializeJson(jsonOut, output);
+  client.print(output);
 
-    String output;
-    serializeJson(jsonOut, output);
-    client.print(output);
-  }
+  pirSensor = false;
 }
 
 /* Read PCA9554 inputs (DIO0-DIO3) */

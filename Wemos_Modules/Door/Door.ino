@@ -24,8 +24,8 @@
 #include <ESP8266WiFi.h>
 #include <ArduinoWiFiServer.h>
 
-#define WIFI_SSID "G41C control node"
-#define WIFI_PASSWD "g41cstandsforgalc"
+#define WIFI_SSID "3.1415"
+#define WIFI_PASSWD "YouShallNotPassword"
 #define PORT 8080
 #define ANALOG_IC_ADDR 0x36
 #define DIGITAL_IC_ADDR 0x38
@@ -43,7 +43,7 @@ unsigned int readDigitalInputs();
 void setDigitalOutput(const int pin, const bool state);
 
 void readAnalogInput();
-void handleConnections();
+void handleConnections(WiFiClient client);
 void connectWifi();
 
 Servo doorServo;
@@ -83,41 +83,48 @@ void setup()
 
 void loop()
 {
-    // Handle clients sending request to the TCP server.
-    handleConnections();
-
-    int inputData = readDigitalInputs();
-    buttonOutside = inputData & (1 << 0);
-    buttonInside = inputData & (1 << 1);
-
-    setDigitalOutput((ledInside << 5) | (ledOutside << 4));
-
-    doorServo.write(door);
-}
-
-void handleConnections()
-{
-    // Gets a client that is connected to the server and has data available for reading.
     WiFiClient client = server.available();
 
-    if (client) // Check if client has sent a message, otherwise this is false.
+    // Don't check for an available client while we still know an connected client.
+    while (client.connected())
     {
-        String s = client.readStringUntil('}'); // read untill the end of a json request
+        int inputData = readDigitalInputs();
+        buttonOutside |= inputData & (1 << 0);
+        buttonInside |= inputData & (1 << 1);
 
-        StaticJsonDocument<100> jsonIn;
-        deserializeJson(jsonIn, s);
-        door = jsonIn["door"];
-        ledInside = jsonIn["ledI"];
-        ledOutside = jsonIn["ledO"];
+        // Check if client has send a message, otherwise this is false.
+        if (client)
+        {
+            // Handle clients sending request to the TCP server.
+            handleConnections(client);
+            setDigitalOutput((ledInside << 5) | (ledOutside << 4));
 
-        StaticJsonDocument<100> jsonOut;
-        jsonOut["btnO"] = buttonOutside;
-        jsonOut["btnI"] = buttonInside;
-
-        String output;
-        serializeJson(jsonOut, output);
-        client.print(output);
+            doorServo.write(door);
+        }
     }
+}
+
+void handleConnections(WiFiClient client)
+{
+    String s = client.readStringUntil('}'); // read untill the end of a json request
+
+    StaticJsonDocument<100> jsonIn;
+    deserializeJson(jsonIn, s);
+    door = jsonIn["door"];
+    ledInside = jsonIn["ledI"];
+    ledOutside = jsonIn["ledO"];
+
+    StaticJsonDocument<100> jsonOut;
+    jsonOut["btnO"] = buttonOutside;
+    jsonOut["btnI"] = buttonInside;
+
+    String output;
+    serializeJson(jsonOut, output);
+    client.print(output);
+
+    // Clear button buffers
+    buttonOutside = false;
+    buttonInside = false;
 }
 
 /* Read PCA9554 inputs (DIO0-DIO3) */

@@ -11,13 +11,13 @@ void Door::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  if (this->buttonIn != document["btnI"].GetBool() ||
-  this->buttonOut != document["btnO"].GetBool()) {
-    setUpdated(true);
-  }
+  if (!document.IsObject()) return;
 
-  this->buttonIn = document["btnI"].GetBool();
-  this->buttonOut = document["btnO"].GetBool();
+  if (document.HasMember("btnI") && document["btnI"].IsBool())
+    this->buttonIn = document["btnI"].GetBool();
+
+  if (document.HasMember("btnO") && document["btnO"].IsBool())
+    this->buttonOut = document["btnO"].GetBool();
 }
 
 std::string Door::getOutputsJSON() const
@@ -61,7 +61,8 @@ std::string Door::getInputsJSON() const
 
 Door &Door::setLedIn(bool val)
 {
-  if (ledIn == val){
+  if (ledIn == val)
+  {
     setUpdated(true);
   }
   ledIn = val;
@@ -69,7 +70,8 @@ Door &Door::setLedIn(bool val)
 }
 Door &Door::setLedOut(bool val)
 {
-  if (ledOut == val){
+  if (ledOut == val)
+  {
     setUpdated(true);
   }
   ledOut = val;
@@ -77,7 +79,8 @@ Door &Door::setLedOut(bool val)
 }
 Door &Door::setDoor(int val)
 {
-  if (door == val){
+  if (door == val)
+  {
     setUpdated(true);
   }
   door = val;

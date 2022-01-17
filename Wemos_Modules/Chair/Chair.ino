@@ -25,17 +25,17 @@
 #include <ESP8266WiFi.h>
 #include <ArduinoWiFiServer.h>
 
-#define WIFI_SSID "G41C control node"
-#define WIFI_PASSWD "g41cstandsforgalc"
+#define WIFI_SSID "3.1415"
+#define WIFI_PASSWD "YouShallNotPassword"
 #define PORT 8080
 #define ANALOG_IC_ADDR 0x36
 #define DIGITAL_IC_ADDR 0x38
 #define DIGITAL_IC_IN 0x00
 #define DIGITAL_IC_OUT 0x01
 
-/*const IPAddress local_IP(172, 16, 99, 100);
+const IPAddress local_IP(172, 16, 99, 103);
 const IPAddress gateway(172, 16, 99, 1);
-const IPAddress subnet(255, 255, 255, 0);*/
+const IPAddress subnet(255, 255, 255, 0);
 
 void configureDigitalIC();
 void configureAnalogIC();
@@ -44,10 +44,8 @@ unsigned int readDigitalInputs();
 void setDigitalOutput(const int pin, const bool state);
 
 unsigned int readAnalogInput(int ANALOG_CH);
-void handleConnections();
+void handleConnections(WiFiClient client);
 void connectWifi();
-
-
 
 bool buttonChair = false;
 bool ledChair = false;
@@ -68,57 +66,55 @@ void setup()
 
     delay(1000);
 
-
     configureDigitalIC();
     configureAnalogIC();
 
     // Start TCP Server
     server.begin();
     Serial.println("TCP Server started listening...");
-
-   
 }
 
 void loop()
 {
-    // Handle clients sending request to the TCP server.
-    handleConnections();
-
-    int inputData = readDigitalInputs();
-    unsigned int analogInputData = readAnalogInput(0);
-
-    buttonChair = inputData & (1 << 0);
-    forceSensorChair = analogInputData;
-    
-   
-    setDigitalOutput((vibrationMotor << 5) | (ledChair << 4));
-
-    
-}
-
-void handleConnections()
-{
-    // Gets a client that is connected to the server and has data available for reading.
     WiFiClient client = server.available();
 
-    if (client) // Check if client has send a message, otherwise this is false.
+    // Don't check for an available client while we still know an connected client.
+    while (client.connected())
     {
-        String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
+        int inputData = readDigitalInputs();
+        buttonChair |= inputData & (1 << 0);
 
-        StaticJsonDocument<100> jsonIn;
-        deserializeJson(jsonIn, s);
-        vibrationMotor = jsonIn["vM"];
-        ledChair = jsonIn["lChr"];
+        unsigned int analogInputData = readAnalogInput(0);
+        forceSensorChair = analogInputData;
 
-        StaticJsonDocument<100> jsonOut;
-        jsonOut["btnC"] = buttonChair;
-        jsonOut["fsCh"] = forceSensorChair;
-        
-
-        String output;
-        serializeJson(jsonOut, output);
-        client.print(output);
+        // Check if client has send a message, otherwise this is false.
+        if (client)
+        {
+            // Handle clients sending request to the TCP server.
+            handleConnections(client);
+            setDigitalOutput((vibrationMotor << 5) | (ledChair << 4));
+        }
     }
+}
+
+void handleConnections(WiFiClient client)
+{
+    String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
+
+    StaticJsonDocument<100> jsonIn;
+    deserializeJson(jsonIn, s);
+    vibrationMotor = jsonIn["vM"];
+    ledChair = jsonIn["lChr"];
+
+    StaticJsonDocument<100> jsonOut;
+    jsonOut["btnC"] = buttonChair;
+    jsonOut["fsCh"] = forceSensorChair;
+
+    String output;
+    serializeJson(jsonOut, output);
+    client.print(output);
+
+    buttonChair = false;
 }
 
 /* Read PCA9554 inputs (DIO0-DIO3) */
@@ -129,7 +125,7 @@ unsigned int readDigitalInputs()
     Wire.endTransmission();                  // End I2C connection
     Wire.requestFrom(DIGITAL_IC_ADDR, 1);    // Request values from PCA9554A , 1 Byte
 
-    unsigned int inputs = Wire.read();       // Copy values to variable inputs
+    unsigned int inputs = Wire.read(); // Copy values to variable inputs
     return (inputs & 0x0f);
 }
 
@@ -167,7 +163,6 @@ unsigned int readAnalogInput(int ANALOG_CH)
     unsigned int anin0;
     unsigned int anin1;
 
-    
     if (ANALOG_CH == 0)
     {
         Wire.requestFrom(ANALOG_IC_ADDR, 4); // Request values from MAX11647 , 4 Bytes
@@ -193,10 +188,10 @@ void connectWifi()
     Serial.println(WIFI_SSID);
 
     // Configure static IP.
-    /*if (!WiFi.config(local_IP, gateway, subnet))
+    if (!WiFi.config(local_IP, gateway, subnet))
     {
         Serial.println("STA Failed to configure");
-    }*/
+    }
 
     // Start connecting to the WiFi
     WiFi.begin(WIFI_SSID, WIFI_PASSWD);
