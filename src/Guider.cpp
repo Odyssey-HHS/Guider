@@ -1,7 +1,7 @@
-//#define USE_DOOR
-//#define USE_CHAIR
-//#define USE_BED
-//#define USE_TABLELAMP
+#define USE_DOOR
+#define USE_CHAIR
+#define USE_BED
+#define USE_TABLELAMP
 #define USE_COLUMN
 
 #define DASHBOARD_PORT
@@ -61,11 +61,11 @@ int main(int argc, char const *argv[])
 {
   dashboardModule = Dashboard();
 
-  // Create a new connection to the Wemos board.
-  #ifdef USE_COLUMN
+// Create a new connection to the Wemos board.
+#ifdef USE_COLUMN
   std::cout << "Connecting to Column..\n";
   Client columnClient(COLUMN_MODULE, 8080);
-  #endif
+#endif
 
 #ifdef USE_CHAIR
   std::cout << "Connecting to Chair..\n";
@@ -120,11 +120,11 @@ void fetcher()
 {
   while (1)
   {
-    // Synchronize the object with the Wemos module
-    #ifdef USE_COLUMN
+// Synchronize the object with the Wemos module
+#ifdef USE_COLUMN
     std::cout << "Fetching Column...\n";
     column.fetch();
-    #endif
+#endif
 #ifdef USE_CHAIR
     std::cout << "Fetching Chair...\n";
     chair.fetch();

@@ -23,16 +23,16 @@
 #include <ESP8266WiFi.h>
 #include <ArduinoWiFiServer.h>
 
-#define WIFI_SSID "ALSTAR"
-#define WIFI_PASSWD "niceeeneuro"
+#define WIFI_SSID "3.1415"                //ALSTAR
+#define WIFI_PASSWD "YouShallNotPassword" //niceeeneuro
 #define PORT 8080
 #define ANALOG_IC_ADDR 0x36
 #define DIGITAL_IC_ADDR 0x38
 #define DIGITAL_IC_IN 0x00
 #define DIGITAL_IC_OUT 0x01
 
-const IPAddress local_IP(192, 168, 31, 5);
-const IPAddress gateway(192, 168, 31, 4);
+const IPAddress local_IP(172, 16, 99, 103); // 192, 168, 31, 5
+const IPAddress gateway(172, 16, 99, 1);    // 192, 168, 31, 4
 const IPAddress subnet(255, 255, 255, 0);
 
 void configureDigitalIC();
