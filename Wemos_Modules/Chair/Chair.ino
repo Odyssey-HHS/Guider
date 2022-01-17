@@ -81,18 +81,17 @@ void loop()
     // Don't check for an available client while we still know an connected client.
     while (client.connected())
     {
+        int inputData = readDigitalInputs();
+        buttonChair |= inputData & (1 << 0);
+
+        unsigned int analogInputData = readAnalogInput(0);
+        forceSensorChair = analogInputData;
+
         // Check if client has send a message, otherwise this is false.
         if (client)
         {
             // Handle clients sending request to the TCP server.
             handleConnections(client);
-
-            int inputData = readDigitalInputs();
-            unsigned int analogInputData = readAnalogInput(0);
-
-            buttonChair = inputData & (1 << 0);
-            forceSensorChair = analogInputData;
-
             setDigitalOutput((vibrationMotor << 5) | (ledChair << 4));
         }
     }
@@ -114,6 +113,8 @@ void handleConnections(WiFiClient client)
     String output;
     serializeJson(jsonOut, output);
     client.print(output);
+
+    buttonChair = false;
 }
 
 /* Read PCA9554 inputs (DIO0-DIO3) */

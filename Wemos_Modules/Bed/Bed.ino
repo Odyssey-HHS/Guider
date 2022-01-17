@@ -73,22 +73,21 @@ void setup()
 
 void loop()
 {
-
     WiFiClient client = server.available();
 
     // Don't check for an available client while we still know an connected client.
     while (client.connected())
     {
+        int inputData = readDigitalInputs();
+        sw |= inputData & (1 << 0);
+        int ps = readAnalogInput(0);
+
         // Check if client has send a message, otherwise this is false.
         if (client)
         {
             // Handle clients sending request to the TCP server.
             handleConnections(client);
-            
-            int inputData = readDigitalInputs();
-            sw = inputData & (1 << 0);
             setDigitalOutput(4, led);
-            int ps = readAnalogInput(0);
         }
     }
 }
@@ -108,6 +107,8 @@ void handleConnections(WiFiClient client)
     String output;
     serializeJson(jsonOut, output);
     client.print(output);
+
+    sw = false;
 }
 
 /* Read PCA9554 inputs (DIO0-DIO3) */

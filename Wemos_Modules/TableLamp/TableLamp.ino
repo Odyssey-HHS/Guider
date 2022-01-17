@@ -81,15 +81,14 @@ void loop()
   // Don't check for an available client while we still know an connected client.
   while (client.connected())
   {
+    int inputData = readDigitalInputs();
+    pirSensor |= inputData == 15;
+
     // Check if client has send a message, otherwise this is false.
     if (client)
     {
       // Handle clients sending request to the TCP server.
       handleConnections(client);
-
-      int inputData = readDigitalInputs();
-
-      pirSensor = inputData == 15;
 
       if (rgb0history != rgb0)
       {
@@ -115,6 +114,8 @@ void handleConnections(WiFiClient client)
   String output;
   serializeJson(jsonOut, output);
   client.print(output);
+
+  pirSensor = false;
 }
 
 /* Read PCA9554 inputs (DIO0-DIO3) */
