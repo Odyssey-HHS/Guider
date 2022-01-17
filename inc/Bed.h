@@ -11,8 +11,8 @@ private:
 public:
   Bed();
   Bed(Client client);
-  bool switchPast;                // button state past
-  bool switchCurrent;                // button state current
+  bool switchPast;         // button state past
+  bool switchCurrent;      // button state current
   void setled(bool newVal) // this will set the status of the led
   {
     led = newVal;

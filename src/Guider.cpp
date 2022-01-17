@@ -1,3 +1,9 @@
+#define USE_DOOR
+#define USE_CHAIR
+#define USE_BED
+#define USE_TABLELAMP
+#define USE_WALL
+
 #define DASHBOARD_PORT
 
 #include <iostream>
@@ -45,36 +51,56 @@ void fetcher();
 void logic();
 void dashboard();
 
+int socket_fd = 0;
+
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
   dashboardModule = Dashboard();
 
-  // Create a new connection to the Wemos board.
-  // std::cout << "Connecting to Chair.."
-  //           << "\n";
-  // Client chairClient(CHAIR_MODULE, 8080);
-  // std::cout << "Connecting to Bed.."
-  //           << "\n";
-  // Client bedClient(BED_MODULE, 8080);
-  // std::cout << "Connecting to Lamp.."
-  //           << "\n";
-  // Client lampClient(LAMP_MODULE, 8080);
-  // std::cout << "Connecting to Door.."
-  //           << "\n";
-  // Client doorClient(DOOR_MODULE, 8080);
-   std::cout << "Connecting to Wall.."
-            << "\n";
+// Create a new connection to the Wemos board.
+#ifdef USE_CHAIR
+  std::cout << "Connecting to Chair..\n";
+  Client chairClient(CHAIR_MODULE, 8080);
+#endif
+
+#ifdef USE_BED
+  std::cout << "Connecting to Bed..\n";
+  Client bedClient(BED_MODULE, 8080);
+#endif
+
+#ifdef USE_TABLELAMP
+  std::cout << "Connecting to Lamp..\n";
+  Client lampClient(LAMP_MODULE, 8080);
+#endif
+
+#ifdef USE_DOOR
+  std::cout << "Connecting to Door..\n";
+  Client doorClient(DOOR_MODULE, 8080);
+#endif
+#ifdef USE_WALL
+  std::cout << "Connecting to Wall..\n";
   Client wallClient(WALL_MODULE, 8080);
+#endif
 
-  // Create a new module using the connection created above.
-  // bed = Bed(bedClient);
-  // tableLamp = TableLamp(lampClient);
-  // door = Door(doorClient);
-  // chair = Chair(chairClient);
+// Create a new module using the connection created above.
+#ifdef USE_BED
+  bed = Bed(bedClient);
+#endif
+#ifdef USE_TABLELAMP
+  tableLamp = TableLamp(lampClient);
+#endif
+#ifdef USE_DOOR
+  door = Door(doorClient);
+#endif
+#ifdef USE_CHAIR
+  chair = Chair(chairClient);
+#endif
+#ifdef USE_WALL
   wall = Wall(wallClient);
+#endif
 
-  // Spin up the two threads.
+  // Spin up the threads.
   std::thread fetcherThread(fetcher);
   std::thread logicThread(logic);
   std::thread dashboardThread(dashboard);
@@ -90,25 +116,42 @@ void fetcher()
 {
   while (1)
   {
-    // Synchronize the object with the Wemos module
-    // std::cout << "Fetching Chair...\n";
-    // chair.fetch();
-    // std::cout << "Fetching TableLamp...\n";
-    // tableLamp.fetch();
-    // std::cout << "Fetching Door...\n";
-    // door.fetch();
-    // std::cout << "Fetching Bed...\n";
-    // bed.fetch();
-    //std::cout << "Fetching Wall...\n";
+// Synchronize the object with the Wemos module
+#ifdef USE_CHAIR
+    std::cout << "Fetching Chair...\n";
+    chair.fetch();
+#endif
+#ifdef USE_TABLELAMP
+    std::cout << "Fetching TableLamp...\n";
+    tableLamp.fetch();
+#endif
+#ifdef USE_DOOR
+    std::cout << "Fetching Door...\n";
+    door.fetch();
+#endif
+#ifdef USE_BED
+    std::cout << "Fetching Bed...\n";
+    bed.fetch();
+#endif
+#ifdef USE_WALL
+    std::cout << "Fetching Wall...\n";
     wall.fetch();
+#endif
 
-    //std::cout << "Starting new fetching round...\n";
+    if (dashboardModule.hasChanged())
+    {
+      std::cout << "Updating Dashboard...\n";
+      server.send(socket_fd, dashboardModule.getJSON().c_str());
+      dashboardModule.update();
+    }
+
+    std::cout << "Starting new fetching round...\n";
   }
 }
 
 int isNightTime(std::time_t current)
 {
-  return !(localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6);
+  return (localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6) | dashboardModule.getForceNightTime();
 }
 
 /* Execute logic functions, these manipulate the outputs of modules. */
@@ -230,7 +273,6 @@ void logic()
     {
       chair.switchCurrent = !chair.switchCurrent;
       chairToggleTimer.start();
-      std::cout << chair.switchCurrent << "\n";
     }
 
     if (chair.getFsensor() <= 100)
@@ -265,7 +307,7 @@ void dashboard()
   {
     std::cout << "Waiting for connection\n";
     // Wait for client (blocking)
-    int socket_fd = server.awaitClient();
+    socket_fd = server.awaitClient();
 
     std::cout << "Connected!\n";
 
@@ -309,9 +351,12 @@ void dashboard()
         dashboardModule.setMotionAlert(document["motionAlert"].GetBool());
       }
 
-      std::cout << "Recieved!  " << buffer << "\n";
+      if (document.HasMember("fnt") && document["fnt"].IsBool())
+      {
+        dashboardModule.setForceNightTime(document["fnt"].GetBool());
+      }
 
-      server.send(socket_fd, dashboardModule.getJSON().c_str());
+      std::cout << "Recieved!  " << buffer << "\n";
       dashboardModule.unlock();
     }
 
