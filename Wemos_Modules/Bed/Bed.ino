@@ -73,16 +73,24 @@ void setup()
 
 void loop()
 {
-    // Handle clients sending request to the TCP server.
-    handleConnections();
 
-    int inputData = readDigitalInputs();
-    //Serial.println(inputData);
-    sw = inputData & (1 << 0);
-    setDigitalOutput(4, led);
-    int ana = readAnalogInput(0);
-    ps = ana;
-    Serial.println(ana);
+    WiFiClient client = server.available();
+
+    // Don't check for an available client while we still know an connected client.
+    while (client.connected())
+    {
+        // Check if client has send a message, otherwise this is false.
+        if (client)
+        {
+            // Handle clients sending request to the TCP server.
+            handleConnections(client);
+            
+            int inputData = readDigitalInputs();
+            sw = inputData & (1 << 0);
+            setDigitalOutput(4, led);
+            int ps = readAnalogInput(0);
+        }
+    }
 }
 
 void handleConnections(WiFiClient client)
