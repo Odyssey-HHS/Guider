@@ -24,25 +24,26 @@
 
 #include "Timer.h"
 
-// Declair dashboard server and class
+// Declare dashboard server and class
 Server server(8000);
 Dashboard dashboardModule;
 
 using namespace std;
-// Declair an instance of the module
+// Declare an instance of the module
 Column column;
 Chair chair;
 Bed bed;
 TableLamp tableLamp;
 Door door;
 
-// Declair timers
+// Declare timers
 Timer doorLightTimer = Timer(5);
 Timer tableLampTimer = Timer(2);
 Timer bedTimer = Timer(10);
 Timer chairToggleTimer = Timer(1);
+Timer columnBuzzer = Timer(1);
 
-// Declair the functions used in seperate threads.
+// Declare the functions used in seperate threads.
 void fetcher();
 void logic();
 void dashboard();
@@ -50,12 +51,13 @@ void dashboard();
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
-  dashboardModule = Dashboard();
+  // dashboardModule = Dashboard();
 
   // Create a new connection to the Wemos board.
   std::cout << "Connecting to Column.."
             << "\n";
   Client columnClient(COLUMN_MODULE, 8080);
+  /*
   std::cout << "Connecting to Chair.."
             << "\n";
   Client chairClient(CHAIR_MODULE, 8080);
@@ -68,15 +70,18 @@ int main(int argc, char const *argv[])
   std::cout << "Connecting to Door.."
             << "\n";
   Client doorClient(DOOR_MODULE, 8080);
+  */
 
   // Create a new module using the connection created above.
   column = Column(columnClient);
+  /*
   bed = Bed(bedClient);
   tableLamp = TableLamp(lampClient);
   door = Door(doorClient);
   chair = Chair(chairClient);
+  */
 
-  // Spin up the two threads.
+  // Spin up the three threads.
   std::thread fetcherThread(fetcher);
   std::thread logicThread(logic);
   std::thread dashboardThread(dashboard);
@@ -95,6 +100,7 @@ void fetcher()
     // Synchronize the object with the Wemos module
     std::cout << "Fetching Column...\n";
     column.fetch();
+    /*
     std::cout << "Fetching Chair...\n";
     chair.fetch();
     std::cout << "Fetching TableLamp...\n";
@@ -103,7 +109,7 @@ void fetcher()
     door.fetch();
     std::cout << "Fetching Bed...\n";
     bed.fetch();
-
+*/
     std::cout << "Starting new fetching round...\n";
   }
 }
@@ -118,11 +124,40 @@ void logic()
 {
   while (1)
   {
-    // Buzzer gaat aan zodra er op de knop wordt gedrukt.
+    std::time_t current = std::time(nullptr);
+
+    // Column logic
+    while (column.getLock() || dashboardModule.getLock())
+      ;
+    column.lock();
+    dashboardModule.lock();
     if (column.getButton())
     {
-      cout << "DE ALARMKNOP IS INGEDRUKT. DE BEWONER IS IN NOOD" << endl;
-    std::time_t current = std::time(nullptr);
+      cout << "DE ALARMKNOP IS INGEDRUKT! DE BEWONER IS IN NOOD!" << endl;
+      column.setLed(true);
+    }
+    if (column.getBuzzer() > 50)
+    {
+      cout << "ER IS BRAND!" << endl;
+      for (int i = 0; i < 3; i++)
+      {
+        column.setBuzzer(true);
+        columnBuzzer.start();
+        if (columnBuzzer.finished())
+        {
+          column.setBuzzer(false);
+        }
+      }
+    }
+    if (door.getButtonOut())
+    {
+      columnBuzzer.start();
+      column.setBuzzer(true);
+    }
+    if (columnBuzzer.finished())
+    {
+      column.setBuzzer(false);
+    }
 
     // Table Lamp Logic, turns white on motion, otherwise it runs to the dashboard provided color.
     while (tableLamp.getLock() || dashboardModule.getLock())
