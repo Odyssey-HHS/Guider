@@ -88,16 +88,15 @@ void loop()
     // Don't check for an available client while we still know an connected client.
     while (client.connected())
     {
+        int inputData = readDigitalInputs();
+        buttonOutside |= inputData & (1 << 0);
+        buttonInside |= inputData & (1 << 1);
+
         // Check if client has send a message, otherwise this is false.
         if (client)
         {
             // Handle clients sending request to the TCP server.
             handleConnections(client);
-
-            int inputData = readDigitalInputs();
-            buttonOutside = inputData & (1 << 0);
-            buttonInside = inputData & (1 << 1);
-
             setDigitalOutput((ledInside << 5) | (ledOutside << 4));
 
             doorServo.write(door);
@@ -122,6 +121,10 @@ void handleConnections(WiFiClient client)
     String output;
     serializeJson(jsonOut, output);
     client.print(output);
+
+    // Clear button buffers
+    buttonOutside = false;
+    buttonInside = false;
 }
 
 /* Read PCA9554 inputs (DIO0-DIO3) */

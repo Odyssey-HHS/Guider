@@ -85,7 +85,7 @@ void loop()
         if (client)
         {
             // Handle clients sending request to the TCP server.
-            handleConnections();
+            handleConnections(client);
 
             int inputData = readDigitalInputs();
             unsigned int analogInputData = readAnalogInput(0);
