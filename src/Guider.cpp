@@ -51,8 +51,6 @@ void fetcher();
 void logic();
 void dashboard();
 
-int socket_fd = 0;
-
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
@@ -137,13 +135,6 @@ void fetcher()
     std::cout << "Fetching Wall...\n";
     wall.fetch();
 #endif
-
-    if (dashboardModule.hasChanged())
-    {
-      std::cout << "Updating Dashboard...\n";
-      server.send(socket_fd, dashboardModule.getJSON().c_str());
-      dashboardModule.update();
-    }
 
     std::cout << "Starting new fetching round...\n";
   }
@@ -312,7 +303,7 @@ void dashboard()
   {
     std::cout << "Waiting for connection\n";
     // Wait for client (blocking)
-    socket_fd = server.awaitClient();
+    int socket_fd = server.awaitClient();
 
     std::cout << "Connected!\n";
 
@@ -367,6 +358,8 @@ void dashboard()
       }
 
       std::cout << "Recieved!  " << buffer << "\n";
+
+      server.send(socket_fd, dashboardModule.getJSON().c_str());
       dashboardModule.unlock();
     }
 
