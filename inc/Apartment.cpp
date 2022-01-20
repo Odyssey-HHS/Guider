@@ -6,13 +6,10 @@
 #include <chrono>
 #include <thread>
 
-#include "Apartment.h"
 #include "ModuleAddresses.h"
-
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
-
 
 Apartment::Apartment()
 {
@@ -24,26 +21,26 @@ Apartment::Apartment()
 
   // Create a new connection to the Wemos board.
 #ifdef USE_CHAIR
-  std::cout << "Connecting to apartment.getChair()->.\n";
+  std::cout << "Connecting to Chair.\n";
   Client chairClient(CHAIR_MODULE, 8080);
 #endif
 
 #ifdef USE_BED
-  std::cout << "Connecting to apartment.getBed()->.\n";
+  std::cout << "Connecting to Bed.\n";
   Client bedClient(BED_MODULE, 8080);
 #endif
 
 #ifdef USE_TABLELAMP
-  std::cout << "Connecting to Lamp..\n";
+  std::cout << "Connecting to TableLamp..\n";
   Client lampClient(LAMP_MODULE, 8080);
 #endif
 
 #ifdef USE_DOOR
-  std::cout << "Connecting to apartment.getDoor()->.\n";
+  std::cout << "Connecting to Door.\n";
   Client doorClient(DOOR_MODULE, 8080);
 #endif
 #ifdef USE_WALL
-  std::cout << "Connecting to apartment.getWall()->.\n";
+  std::cout << "Connecting to Wall.\n";
   Client wallClient(WALL_MODULE, 8080);
 #endif
 
