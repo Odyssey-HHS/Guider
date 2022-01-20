@@ -1,3 +1,6 @@
+#ifndef WALL_H
+#define WALL_H
+
 #include "Client.h"
 #include "Module.h"
 
@@ -32,3 +35,5 @@ public:
   void setInputsJSON(const std::string json);
   std::string getOutputsJSON() const;
 };
+
+#endif

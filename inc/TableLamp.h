@@ -3,6 +3,7 @@
 
 #include "Client.h"
 #include "Module.h"
+#include "Timer.h"
 
 class TableLamp : public Module
 {
@@ -12,6 +13,8 @@ public:
 
   void setInputsJSON(const std::string json);
   std::string getOutputsJSON() const;
+
+  Timer timer = Timer(2);
 
   bool getPirSensor();
   TableLamp &setLed(const int red, const int green, const int blue);

@@ -1,5 +1,9 @@
+#ifndef CHAIR_H
+#define CHAIR_H
+
 #include "Client.h"
 #include "Module.h"
+#include "Timer.h"
 
 class Chair : public Module
 {
@@ -17,6 +21,8 @@ public:
 
   void setInputsJSON(const std::string json);
   std::string getOutputsJSON() const;
+
+  Timer timer = Timer(1);
 
   // this will set the status of the motor
   Chair &setMotor(bool state)
@@ -44,3 +50,5 @@ public:
     return fsensor;
   }
 };
+
+#endif
