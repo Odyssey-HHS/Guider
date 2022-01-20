@@ -342,7 +342,7 @@ void dashboard()
 
       if (document.HasMember("panicAlert") && document["panicAlert"].IsBool())
       {
-        dashboardModule.setPanicAlert(document["panicAlert"].GetBool());
+        apartment.getDashboard()->setPanicAlert(document["panicAlert"].GetBool());
       }
 
       if (document.HasMember("fnt") && document["fnt"].IsBool())
