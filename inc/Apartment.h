@@ -18,7 +18,7 @@ private:
   TableLamp tableLamp;
   Wall wall;
   Dashboard dashboard;
-  Server server;
+  Server server = Server(8000);
 
 public:
   Apartment();
@@ -28,7 +28,7 @@ public:
   TableLamp *getTableLamp();
   Wall *getWall();
   Dashboard *getDashboard();
-  Server *getServer();
+  Server getServer();
 };
 
 #endif // APARTMENT_H

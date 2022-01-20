@@ -92,7 +92,7 @@ Dashboard *Apartment::getDashboard()
   return &this->dashboard;
 }
 
-Server *Apartment::getServer()
+Server Apartment::getServer()
 {
-  return &this->server;
+  return this->server;
 }

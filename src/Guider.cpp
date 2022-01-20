@@ -11,12 +11,12 @@
 
 #include "Apartment.h"
 
+Apartment apartment;
+
 // Declair the functions used in seperate threads.
 void fetcher();
 void logic();
 void dashboard();
-
-Apartment apartment;
 
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
@@ -222,11 +222,12 @@ void logic()
 
 void dashboard()
 {
+  sleep(10);
   while (1)
   {
     std::cout << "Waiting for connection\n";
     // Wait for client (blocking)
-    int socket_fd = apartment.getServer()->awaitClient();
+    int socket_fd = apartment.getServer().awaitClient();
 
     std::cout << "Connected!\n";
 
@@ -238,7 +239,7 @@ void dashboard()
       std::cout << "Waiting for message!\n";
       // Wait for message (blocking)
       char buffer[4096] = {0};
-      receiveStatus = apartment.getServer()->receive(socket_fd, buffer, 4096);
+      receiveStatus = apartment.getServer().receive(socket_fd, buffer, 4096);
 
       // Parse a JSON string into DOM.
       rapidjson::Document document;
@@ -282,7 +283,7 @@ void dashboard()
 
       std::cout << "Recieved!  " << buffer << "\n";
 
-      apartment.getServer()->send(socket_fd, apartment.getDashboard()->getJSON().c_str());
+      apartment.getServer().send(socket_fd, apartment.getDashboard()->getJSON().c_str());
       apartment.getDashboard()->unlock();
     }
 
