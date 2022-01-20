@@ -2,7 +2,8 @@
 //#define USE_CHAIR
 //#define USE_BED
 //#define USE_TABLELAMP
-#define USE_WALL
+#define USE_COLUMN
+//#define USE_WALL
 
 #define DASHBOARD_PORT
 
@@ -10,6 +11,7 @@
 #include <ctime>
 #include <chrono>
 #include <thread>
+#include <string>
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -25,28 +27,32 @@
 #include "TableLamp.h"
 #include "Chair.h"
 #include "Bed.h"
+#include "Column.h"
 #include "Wall.h"
 
 #include "Timer.h"
 
-// Declair dashboard server and class
+
+// Declare dashboard server and class
 Server server(8000);
 Dashboard dashboardModule;
 
-// Declair an instance of the module
+// Declare an instance of the module
+Column column;
 Chair chair;
 Bed bed;
 TableLamp tableLamp;
 Door door;
 Wall wall;
 
-// Declair timers
+// Declare timers
 Timer doorLightTimer = Timer(5);
 Timer tableLampTimer = Timer(2);
 Timer bedTimer = Timer(10);
 Timer chairToggleTimer = Timer(1);
+Timer columnTimer = Timer(1);
 
-// Declair the functions used in seperate threads.
+// Declare the functions used in seperate threads.
 void fetcher();
 void logic();
 void dashboard();
@@ -57,6 +63,11 @@ int main(int argc, char const *argv[])
   dashboardModule = Dashboard();
 
 // Create a new connection to the Wemos board.
+#ifdef USE_COLUMN
+  std::cout << "Connecting to Column..\n";
+  Client columnClient(COLUMN_MODULE, 8080);
+#endif
+
 #ifdef USE_CHAIR
   std::cout << "Connecting to Chair..\n";
   Client chairClient(CHAIR_MODULE, 8080);
@@ -82,6 +93,9 @@ int main(int argc, char const *argv[])
 #endif
 
 // Create a new module using the connection created above.
+#ifdef USE_COLUMN
+  column = Column(columnClient);
+#endif
 #ifdef USE_BED
   bed = Bed(bedClient);
 #endif
@@ -109,12 +123,16 @@ int main(int argc, char const *argv[])
   dashboardThread.join();
 }
 
-/* Updates the module objects syncing them with the wemos hardware. */
+// Updates the module objects syncing them with the wemos hardware.
 void fetcher()
 {
   while (1)
   {
 // Synchronize the object with the Wemos module
+#ifdef USE_COLUMN
+    std::cout << "Fetching Column...\n";
+    column.fetch();
+#endif
 #ifdef USE_CHAIR
     std::cout << "Fetching Chair...\n";
     chair.fetch();
@@ -151,6 +169,44 @@ void logic()
   while (1)
   {
     std::time_t current = std::time(nullptr);
+
+    // Column logic
+    while (column.getLock() || dashboardModule.getLock())
+      ;
+    column.lock();
+    dashboardModule.lock();
+
+    // Panic Button
+    if (column.getButton() && columnTimer.finished())
+    {
+      std::cout << "DE ALARMKNOP IS INGEDRUKT! DE BEWONER IS IN NOOD!" << std::endl;
+      // dashboardModule.setPanicAlert(true);
+      column.setLed(true);
+      columnTimer.start();
+    }
+    // Fire alarm
+    if (column.getSmokeSensor() > 700 && columnTimer.finished() && dashboardModule.getFireAlert() == false)
+    {
+      columnTimer.start(4);
+      dashboardModule.setFireAlert(true);
+      column.setBuzzer(true);
+    }
+
+    // Doorbel
+    if (door.getButtonOut())
+    {
+      columnTimer.start();
+      column.setBuzzer(true);
+    }
+
+    // Reset
+    if (columnTimer.finished())
+    {
+      column.setBuzzer(false);
+      column.setLed(false);
+    }
+    column.unlock();
+    dashboardModule.unlock();
 
     // Table Lamp Logic, turns white on motion, otherwise it runs to the dashboard provided color.
     while (tableLamp.getLock() || dashboardModule.getLock())
@@ -234,10 +290,10 @@ void logic()
         bed.setled(0);
       }
     }
-    else if (!isNightTime(current)) 
+    else if (!isNightTime(current))
     {
       bed.setled(0);
-    } 
+    }
     else if (!bedTimer.finished())
     {
       bedTimer.start();
@@ -284,7 +340,7 @@ void logic()
     while (wall.getLock())
       ;
     wall.lock();
-    if(wall.getLightSen() <= 600)// && (isNightTime(current)))
+    if (wall.getLightSen() <= 600) // && (isNightTime(current)))
     {
       wall.setShadePan(1);
     }
@@ -293,7 +349,7 @@ void logic()
       wall.setShadePan(0);
     }
     wall.setLedStrip(wall.getPotMeter() / 4);
-    wall.unlock();  
+    wall.unlock();
   }
 }
 

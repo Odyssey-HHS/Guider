@@ -1,7 +1,7 @@
 add_library(Server Server.cpp)
 add_library(Client Client.cpp)
 add_library(Module Module.cpp)
-
+add_library(Column Column.cpp)
 add_library(Dashboard Dashboard.cpp)
 add_library(Bed Bed.cpp)
 add_library(TableLamp TableLamp.cpp)
