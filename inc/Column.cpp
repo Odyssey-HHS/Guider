@@ -12,10 +12,11 @@ void Column::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  if (!document.IsObject()) return;
+  if (!document.IsObject())
+    return;
 
   if (document.HasMember("btn") && document["btn"].IsBool())
-      this->button = document["btn"].GetBool();
+    this->button = document["btn"].GetBool();
 
   if (document.HasMember("smk") && document["smk"].IsInt())
     this->smokeSensor = document["smk"].GetInt();
@@ -58,20 +59,12 @@ int Column::getSmokeSensor()
 
 Column &Column::setLed(bool val)
 {
-  if (led == val)
-  {
-    setUpdated(true);
-  }
   led = val;
   return *this;
 }
 
 Column &Column::setBuzzer(bool val)
 {
-  if (buzzer == val)
-  {
-    setUpdated(true);
-  }
   buzzer = val;
   return *this;
 }

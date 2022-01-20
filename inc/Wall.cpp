@@ -31,7 +31,6 @@ std::string Wall::getOutputsJSON() const
   rapidjson::StringBuffer buffer;
   rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
   document.Accept(writer);
-  
 
   std::string output = buffer.GetString();
   return output;

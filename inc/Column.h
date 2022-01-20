@@ -1,6 +1,6 @@
 #include "Client.h"
 #include "Module.h"
-#include <iostream>
+#include "Timer.h"
 
 class Column : public Module
 {
@@ -13,6 +13,8 @@ private:
 public:
   Column();
   Column(Client client);
+
+  Timer timer = Timer(1);
 
   void setInputsJSON(const std::string json);
   std::string getOutputsJSON() const;

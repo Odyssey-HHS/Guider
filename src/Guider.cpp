@@ -1,11 +1,4 @@
-//#define USE_DOOR
-//#define USE_CHAIR
-//#define USE_BED
-//#define USE_TABLELAMP
-#define USE_COLUMN
-//#define USE_WALL
-
-#define DASHBOARD_PORT
+#include "enableModules.h"
 
 #include <iostream>
 #include <ctime>
@@ -17,40 +10,9 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-#include "Client.h"
-#include "Server.h"
+#include "Apartment.h"
 
-#include "ModuleAddresses.h"
-
-#include "Dashboard.h"
-#include "Door.h"
-#include "TableLamp.h"
-#include "Chair.h"
-#include "Bed.h"
-#include "Column.h"
-#include "Wall.h"
-
-#include "Timer.h"
-
-
-// Declare dashboard server and class
-Server server(8000);
-Dashboard dashboardModule;
-
-// Declare an instance of the module
-Column column;
-Chair chair;
-Bed bed;
-TableLamp tableLamp;
-Door door;
-Wall wall;
-
-// Declare timers
-Timer doorLightTimer = Timer(5);
-Timer tableLampTimer = Timer(2);
-Timer bedTimer = Timer(10);
-Timer chairToggleTimer = Timer(1);
-Timer columnTimer = Timer(1);
+Apartment apartment;
 
 // Declare the functions used in seperate threads.
 void fetcher();
@@ -60,58 +22,6 @@ void dashboard();
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
 {
-  dashboardModule = Dashboard();
-
-// Create a new connection to the Wemos board.
-#ifdef USE_COLUMN
-  std::cout << "Connecting to Column..\n";
-  Client columnClient(COLUMN_MODULE, 8080);
-#endif
-
-#ifdef USE_CHAIR
-  std::cout << "Connecting to Chair..\n";
-  Client chairClient(CHAIR_MODULE, 8080);
-#endif
-
-#ifdef USE_BED
-  std::cout << "Connecting to Bed..\n";
-  Client bedClient(BED_MODULE, 8080);
-#endif
-
-#ifdef USE_TABLELAMP
-  std::cout << "Connecting to Lamp..\n";
-  Client lampClient(LAMP_MODULE, 8080);
-#endif
-
-#ifdef USE_DOOR
-  std::cout << "Connecting to Door..\n";
-  Client doorClient(DOOR_MODULE, 8080);
-#endif
-#ifdef USE_WALL
-  std::cout << "Connecting to Wall..\n";
-  Client wallClient(WALL_MODULE, 8080);
-#endif
-
-// Create a new module using the connection created above.
-#ifdef USE_COLUMN
-  column = Column(columnClient);
-#endif
-#ifdef USE_BED
-  bed = Bed(bedClient);
-#endif
-#ifdef USE_TABLELAMP
-  tableLamp = TableLamp(lampClient);
-#endif
-#ifdef USE_DOOR
-  door = Door(doorClient);
-#endif
-#ifdef USE_CHAIR
-  chair = Chair(chairClient);
-#endif
-#ifdef USE_WALL
-  wall = Wall(wallClient);
-#endif
-
   // Spin up the threads.
   std::thread fetcherThread(fetcher);
   std::thread logicThread(logic);
@@ -130,28 +40,28 @@ void fetcher()
   {
 // Synchronize the object with the Wemos module
 #ifdef USE_COLUMN
-    std::cout << "Fetching Column...\n";
-    column.fetch();
+    std::cout << "Fetching Column.\n";
+    apartment.getColumn()->fetch();
 #endif
 #ifdef USE_CHAIR
-    std::cout << "Fetching Chair...\n";
-    chair.fetch();
+    std::cout << "Fetching Chair.\n";
+    apartment.getChair()->fetch();
 #endif
 #ifdef USE_TABLELAMP
-    std::cout << "Fetching TableLamp...\n";
-    tableLamp.fetch();
+    std::cout << "Fetching TableLamp.\n";
+    apartment.getTableLamp()->fetch();
 #endif
 #ifdef USE_DOOR
-    std::cout << "Fetching Door...\n";
-    door.fetch();
+    std::cout << "Fetching Door.\n";
+    apartment.getDoor()->fetch();
 #endif
 #ifdef USE_BED
-    std::cout << "Fetching Bed...\n";
-    bed.fetch();
+    std::cout << "Fetching Bed.\n";
+    apartment.getBed()->fetch();
 #endif
 #ifdef USE_WALL
-    std::cout << "Fetching Wall...\n";
-    wall.fetch();
+    std::cout << "Fetching Wall.\n";
+    apartment.getWall()->fetch();
 #endif
 
     std::cout << "Starting new fetching round...\n";
@@ -160,7 +70,7 @@ void fetcher()
 
 int isNightTime(std::time_t current)
 {
-  return (localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6) | dashboardModule.getForceNightTime();
+  return (localtime(&current)->tm_hour >= 19 && localtime(&current)->tm_hour <= 6) | apartment.getDashboard()->getForceNightTime();
 }
 
 /* Execute logic functions, these manipulate the outputs of modules. */
@@ -170,196 +80,218 @@ void logic()
   {
     std::time_t current = std::time(nullptr);
 
-    // Column logic
-    while (column.getLock() || dashboardModule.getLock())
-      ;
-    column.lock();
-    dashboardModule.lock();
-
-    // Panic Button
-    if (column.getButton() && columnTimer.finished())
-    {
-      std::cout << "DE ALARMKNOP IS INGEDRUKT! DE BEWONER IS IN NOOD!" << std::endl;
-      // dashboardModule.setPanicAlert(true);
-      column.setLed(true);
-      columnTimer.start();
-    }
-    // Fire alarm
-    if (column.getSmokeSensor() > 700 && columnTimer.finished() && dashboardModule.getFireAlert() == false)
-    {
-      columnTimer.start(4);
-      dashboardModule.setFireAlert(true);
-      column.setBuzzer(true);
-    }
-
-    // Doorbel
-    if (door.getButtonOut())
-    {
-      columnTimer.start();
-      column.setBuzzer(true);
-    }
-
-    // Reset
-    if (columnTimer.finished())
-    {
-      column.setBuzzer(false);
-      column.setLed(false);
-    }
-    column.unlock();
-    dashboardModule.unlock();
-
     // Table Lamp Logic, turns white on motion, otherwise it runs to the dashboard provided color.
-    while (tableLamp.getLock() || dashboardModule.getLock())
+    while (apartment.getTableLamp()->getLock() || apartment.getDashboard()->getLock())
       ;
-    tableLamp.lock();
-    dashboardModule.lock();
+    apartment.getTableLamp()->lock();
+    apartment.getDashboard()->lock();
 
-    if (tableLamp.getPirSensor() && isNightTime(current))
+    // Motion detection
+    if (apartment.getTableLamp()->getPirSensor() && isNightTime(current))
     {
-      tableLamp.setLed(255, 255, 255);
-      tableLampTimer.start();
+      apartment.getTableLamp()->setLed(255, 255, 255);
+      apartment.getTableLamp()->timer.start();
     }
     else
     {
-      if (tableLampTimer.finished() || !isNightTime(current))
-        tableLamp.setLed(dashboardModule.getLampColor());
+      // Dashboard default value
+      if (apartment.getTableLamp()->timer.finished() || !isNightTime(current))
+        apartment.getTableLamp()->setLed(apartment.getDashboard()->getLampColor());
     }
 
-    tableLamp.unlock();
-    dashboardModule.unlock();
+    apartment.getTableLamp()->unlock();
+    apartment.getDashboard()->unlock();
 
     // Door Logic
-    while (door.getLock() || dashboardModule.getLock())
+    while (apartment.getDoor()->getLock() || apartment.getDashboard()->getLock())
       ;
 
-    door.lock();
-    dashboardModule.lock();
+    apartment.getDoor()->lock();
+    apartment.getDashboard()->lock();
 
-    if (door.getButtonIn())
+    // Inside button, opens door
+    if (apartment.getDoor()->getButtonIn())
     {
-      door.setDoor(180).setLedIn(false).setLedOut(false);
-      doorLightTimer.stop();
+      apartment.getDoor()->setDoor(180).setLedIn(false).setLedOut(false);
+      apartment.getDoor()->timer.stop();
     }
-    else if (door.getButtonOut())
+    else if (apartment.getDoor()->getButtonOut())
     {
-      dashboardModule.setFireAlert(true);
+      // Outside button enables light on nighttime
       if (isNightTime(current))
       {
-        door.setLedIn(true).setLedOut(true);
-        doorLightTimer.start();
+        apartment.getDoor()->setLedIn(true).setLedOut(true);
+        apartment.getDoor()->timer.start();
       }
     }
     else
     {
-      door.setDoor(65);
+      // Default closed value
+      apartment.getDoor()->setDoor(65);
     }
 
-    if (doorLightTimer.finished())
+    // Disable lights when timer is finished.
+    if (apartment.getDoor()->timer.finished())
     {
-      door.setLedIn(false).setLedOut(false);
+      apartment.getDoor()->setLedIn(false).setLedOut(false);
     }
 
-    if (dashboardModule.getDoor())
-      door.setDoor(180);
-    door.unlock();
-    dashboardModule.unlock();
+    // Overwrite door open value when dashboard requests this.
+    if (apartment.getDashboard()->getDoor())
+      apartment.getDoor()->setDoor(180);
+    apartment.getDoor()->unlock();
+    apartment.getDashboard()->unlock();
+
+    // Column logic
+    while (apartment.getColumn()->getLock() || apartment.getDashboard()->getLock())
+      ;
+    apartment.getColumn()->lock();
+    apartment.getDashboard()->lock();
+
+    // Panic Button
+    if (apartment.getColumn()->getButton() && apartment.getColumn()->timer.finished())
+    {
+      apartment.getDashboard()->setPanicAlert(true);
+      apartment.getColumn()->setLed(true);
+      apartment.getColumn()->timer.start();
+    }
+    // Fire alarm
+    if (apartment.getColumn()->getSmokeSensor() > 700 && apartment.getColumn()->timer.finished() && apartment.getDashboard()->getFireAlert() == false)
+    {
+      apartment.getColumn()->timer.start(4);
+      apartment.getDashboard()->setFireAlert(true);
+      apartment.getColumn()->setBuzzer(true);
+    }
+
+    // Force the door open when the sensor detects an fire.
+    while (apartment.getDoor()->getLock())
+      ;
+
+    apartment.getDoor()->lock();
+    if (apartment.getColumn()->getSmokeSensor() > 700)
+      apartment.getDoor()->setDoor(180);
+
+    // Doorbel
+    if (apartment.getDoor()->getButtonOut())
+    {
+      apartment.getColumn()->timer.start();
+      apartment.getColumn()->setBuzzer(true);
+    }
+
+    // Unlock the door because we don't need it anymore.
+    apartment.getDoor()->unlock();
+
+    // Reset column outputs when timer is finished.
+    if (apartment.getColumn()->timer.finished())
+    {
+      apartment.getColumn()->setBuzzer(false);
+      apartment.getColumn()->setLed(false);
+    }
+    apartment.getColumn()->unlock();
+    apartment.getDashboard()->unlock();
 
     // Bed Logic
-    while (bed.getLock())
+    while (apartment.getBed()->getLock())
       ;
-    bed.lock();
-    if ((bed.getps() >= 100) && isNightTime(current))
+    apartment.getBed()->lock();
+    if ((apartment.getBed()->getps() >= 100) && isNightTime(current))
     {
-      bed.switchPast = bed.switchCurrent;
+      apartment.getBed()->switchPast = apartment.getBed()->switchCurrent;
 
-      if (bed.getsw())
+      if (apartment.getBed()->getsw())
       {
-        bed.switchCurrent = bed.getsw();
+        apartment.getBed()->switchCurrent = apartment.getBed()->getsw();
       }
-      else if (!bed.getsw())
+      else if (!apartment.getBed()->getsw())
       {
-        bed.switchCurrent = bed.getsw();
+        apartment.getBed()->switchCurrent = apartment.getBed()->getsw();
       }
-      if (!bed.switchCurrent && bed.switchPast)
+      if (!apartment.getBed()->switchCurrent && apartment.getBed()->switchPast)
       {
-        bed.setled(!bed.getLed());
-        bedTimer.start();
+        apartment.getBed()->setled(!apartment.getBed()->getLed());
+        apartment.getBed()->timer.start();
       }
-      if (bedTimer.finished())
+      if (apartment.getBed()->timer.finished())
       {
-        bed.setled(0);
+        apartment.getBed()->setled(0);
       }
     }
     else if (!isNightTime(current))
     {
-      bed.setled(0);
+      apartment.getBed()->setled(0);
     }
-    else if (!bedTimer.finished())
+    else if (!apartment.getBed()->timer.finished())
     {
-      bedTimer.start();
+      apartment.getBed()->timer.start();
     }
-    bed.unlock();
+    apartment.getBed()->unlock();
 
-    while (bed.getLock() || tableLamp.getLock() || dashboardModule.getLock())
+    // Motion alert at nighttime logic
+    while (apartment.getBed()->getLock() || apartment.getTableLamp()->getLock() || apartment.getDashboard()->getLock())
       ;
-    // Bed / Night detection
-    bed.lock();
-    tableLamp.lock();
-    dashboardModule.lock();
+    apartment.getBed()->lock();
+    apartment.getTableLamp()->lock();
+    apartment.getDashboard()->lock();
 
-    if (bed.getps() > 100 && isNightTime(current) && tableLamp.getPirSensor())
+    // If someone is laying on the bed, and it is nighttime, and we detect movement. Set a motion alert.
+    if (apartment.getBed()->getps() > 100 && isNightTime(current) && apartment.getTableLamp()->getPirSensor())
     {
-      dashboardModule.setMotionAlert(true);
+      apartment.getDashboard()->setMotionAlert(true);
     }
 
-    bed.unlock();
-    tableLamp.unlock();
-    dashboardModule.unlock();
+    apartment.getBed()->unlock();
+    apartment.getTableLamp()->unlock();
+    apartment.getDashboard()->unlock();
 
     // Chair logic
-    while (chair.getLock())
+    while (apartment.getChair()->getLock())
       ;
 
-    chair.lock();
-    if (chair.getSwitch() && chair.getFsensor() > 100 && chairToggleTimer.finished())
+    apartment.getChair()->lock();
+    if (apartment.getChair()->getSwitch() && apartment.getChair()->getFsensor() > 100 && apartment.getChair()->timer.finished())
     {
-      chair.switchCurrent = !chair.switchCurrent;
-      chairToggleTimer.start();
+      apartment.getChair()->switchCurrent = !apartment.getChair()->switchCurrent;
+      apartment.getChair()->timer.start();
     }
 
-    if (chair.getFsensor() <= 100)
+    if (apartment.getChair()->getFsensor() <= 100)
     {
-      chair.switchCurrent = false;
+      apartment.getChair()->switchCurrent = false;
     }
 
-    chair.setLed(chair.switchCurrent);
-    chair.setMotor(chair.switchCurrent);
-    chair.unlock();
+    apartment.getChair()->setLed(apartment.getChair()->switchCurrent);
+    apartment.getChair()->setMotor(apartment.getChair()->switchCurrent);
+    apartment.getChair()->unlock();
 
     // Wall logic
-    while (wall.getLock())
+    while (apartment.getWall()->getLock())
       ;
-    wall.lock();
-    if (wall.getLightSen() <= 600) // && (isNightTime(current)))
+    apartment.getWall()->lock();
+
+    // Auto dimming
+    if (apartment.getWall()->getLightSen() <= 600 && isNightTime(current))
     {
-      wall.setShadePan(1);
+      apartment.getWall()->setShadePan(1);
     }
     else
     {
-      wall.setShadePan(0);
+      apartment.getWall()->setShadePan(0);
     }
-    wall.setLedStrip(wall.getPotMeter() / 4);
-    wall.unlock();
+
+    // Led Strip
+    apartment.getWall()->setLedStrip(apartment.getWall()->getPotMeter() / 4);
+    apartment.getWall()->unlock();
   }
 }
 
 void dashboard()
 {
+  sleep(10);
   while (1)
   {
     std::cout << "Waiting for connection\n";
     // Wait for client (blocking)
-    int socket_fd = server.awaitClient();
+    int socket_fd = apartment.getServer().awaitClient();
 
     std::cout << "Connected!\n";
 
@@ -371,7 +303,7 @@ void dashboard()
       std::cout << "Waiting for message!\n";
       // Wait for message (blocking)
       char buffer[4096] = {0};
-      receiveStatus = server.receive(socket_fd, buffer, 4096);
+      receiveStatus = apartment.getServer().receive(socket_fd, buffer, 4096);
 
       // Parse a JSON string into DOM.
       rapidjson::Document document;
@@ -384,39 +316,44 @@ void dashboard()
         break;
       }
 
-      while (dashboardModule.getLock())
+      while (apartment.getDashboard()->getLock())
         ;
-      dashboardModule.lock();
+      apartment.getDashboard()->lock();
 
       if (document.HasMember("openDoor") && document["openDoor"].IsBool())
       {
-        dashboardModule.setDoor(document["openDoor"].GetBool());
+        apartment.getDashboard()->setDoor(document["openDoor"].GetBool());
       }
 
       if (document.HasMember("lampColor") && document["lampColor"].IsInt())
       {
-        dashboardModule.setLampColor(document["lampColor"].GetInt());
+        apartment.getDashboard()->setLampColor(document["lampColor"].GetInt());
       }
 
       if (document.HasMember("motionAlert") && document["motionAlert"].IsBool())
       {
-        dashboardModule.setMotionAlert(document["motionAlert"].GetBool());
+        apartment.getDashboard()->setMotionAlert(document["motionAlert"].GetBool());
       }
 
       if (document.HasMember("fireAlert") && document["fireAlert"].IsBool())
       {
-        dashboardModule.setFireAlert(document["fireAlert"].GetBool());
+        apartment.getDashboard()->setFireAlert(document["fireAlert"].GetBool());
+      }
+
+      if (document.HasMember("panicAlert") && document["panicAlert"].IsBool())
+      {
+        apartment.getDashboard()->setPanicAlert(document["panicAlert"].GetBool());
       }
 
       if (document.HasMember("fnt") && document["fnt"].IsBool())
       {
-        dashboardModule.setForceNightTime(document["fnt"].GetBool());
+        apartment.getDashboard()->setForceNightTime(document["fnt"].GetBool());
       }
 
       std::cout << "Recieved!  " << buffer << "\n";
 
-      server.send(socket_fd, dashboardModule.getJSON().c_str());
-      dashboardModule.unlock();
+      apartment.getServer().send(socket_fd, apartment.getDashboard()->getJSON().c_str());
+      apartment.getDashboard()->unlock();
     }
 
     close(socket_fd);

@@ -1,5 +1,9 @@
+#ifndef BED_H
+#define BED_H
+
 #include "Client.h"
 #include "Module.h"
+#include "Timer.h"
 
 class Bed : public Module
 {
@@ -11,6 +15,7 @@ private:
 public:
   Bed();
   Bed(Client client);
+  Timer timer = Timer(10);
   bool switchPast;         // button state past
   bool switchCurrent;      // button state current
   void setled(bool newVal) // this will set the status of the led
@@ -33,3 +38,5 @@ public:
   void setInputsJSON(const std::string json);
   std::string getOutputsJSON() const;
 };
+
+#endif
