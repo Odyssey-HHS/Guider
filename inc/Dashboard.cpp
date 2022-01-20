@@ -31,7 +31,7 @@ bool Dashboard::getDoor()
 
 bool Dashboard::getFireAlert()
 {
-    return this->fireAlert;
+  return this->fireAlert;
 }
 
 int Dashboard::getLampColor()
@@ -71,6 +71,12 @@ Dashboard &Dashboard::setMotionAlert(bool val)
 Dashboard &Dashboard::setFireAlert(bool val)
 {
   this->fireAlert = val;
+  return *this;
+}
+
+Dashboard &Dashboard::setPanicAlert(bool val)
+{
+  this->panicAlert = val;
   return *this;
 }
 

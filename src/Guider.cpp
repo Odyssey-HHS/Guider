@@ -340,6 +340,11 @@ void dashboard()
         apartment.getDashboard()->setFireAlert(document["fireAlert"].GetBool());
       }
 
+      if (document.HasMember("panicAlert") && document["panicAlert"].IsBool())
+      {
+        dashboardModule.setPanicAlert(document["panicAlert"].GetBool());
+      }
+
       if (document.HasMember("fnt") && document["fnt"].IsBool())
       {
         apartment.getDashboard()->setForceNightTime(document["fnt"].GetBool());

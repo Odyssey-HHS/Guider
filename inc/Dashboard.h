@@ -12,11 +12,11 @@ public:
   Dashboard &setLampColor(int);
   Dashboard &setMotionAlert(bool);
   Dashboard &setFireAlert(bool);
+  Dashboard &setPanicAlert(bool);
   Dashboard &setForceNightTime(bool);
   std::string getJSON() const;
   bool getForceNightTime();
   bool getFireAlert();
-
   bool getLock();
   void lock();
   void unlock();
@@ -28,5 +28,6 @@ private:
   bool lockFile = false;
   bool motionAlert = false;
   bool fireAlert = false;
+  bool panicAlert = false;
 };
 #endif
