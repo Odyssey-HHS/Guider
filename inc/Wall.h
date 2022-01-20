@@ -7,25 +7,25 @@
 class Wall : public Module
 {
 private:
-int shadePan;
-int lightSen;
-int potMeter;
-int ledStrip = 255;
+  int shadePan;
+  int lightSen;
+  int potMeter;
+  int ledStrip = 255;
 
 public:
   Wall();
   Wall(Client client);
   void setShadePan(bool val)
   {
-      shadePan = val;
+    shadePan = val;
   }
   int getLightSen()
   {
-      return lightSen;
+    return lightSen;
   }
   int getPotMeter()
   {
-      return potMeter;
+    return potMeter;
   }
   void setLedStrip(int brightness)
   {

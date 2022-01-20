@@ -157,10 +157,10 @@ void logic()
         apartment.getBed()->setled(0);
       }
     }
-    else if (!isNightTime(current)) 
+    else if (!isNightTime(current))
     {
       apartment.getBed()->setled(0);
-    } 
+    }
     else if (!apartment.getBed()->timer.finished())
     {
       apartment.getBed()->timer.start();
@@ -207,7 +207,7 @@ void logic()
     while (apartment.getWall()->getLock())
       ;
     apartment.getWall()->lock();
-    if(apartment.getWall()->getLightSen() <= 600)// && (isNightTime(current)))
+    if (apartment.getWall()->getLightSen() <= 600) // && (isNightTime(current)))
     {
       apartment.getWall()->setShadePan(1);
     }
@@ -216,7 +216,7 @@ void logic()
       apartment.getWall()->setShadePan(0);
     }
     apartment.getWall()->setLedStrip(apartment.getWall()->getPotMeter() / 4);
-    apartment.getWall()->unlock();  
+    apartment.getWall()->unlock();
   }
 }
 

@@ -4,24 +4,24 @@ Timer::Timer(int stdDuration) : duration(stdDuration) {}
 
 void Timer::start(int newDuration)
 {
-    if (newDuration > 0)
-    {
-        duration = newDuration;
-    }
-    start();
+  if (newDuration > 0)
+  {
+    duration = newDuration;
+  }
+  start();
 }
 
 void Timer::start()
 {
-    timestamp = std::time(nullptr) + duration;
+  timestamp = std::time(nullptr) + duration;
 }
 
 void Timer::stop()
 {
-    timestamp = 0;
+  timestamp = 0;
 }
 
 bool Timer::finished()
 {
-    return std::time(nullptr) > timestamp;
+  return std::time(nullptr) > timestamp;
 }

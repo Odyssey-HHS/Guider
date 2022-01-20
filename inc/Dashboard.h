@@ -6,26 +6,26 @@
 class Dashboard
 {
 public:
-    bool getDoor();
-    int getLampColor();
-    Dashboard &setDoor(bool);
-    Dashboard &setLampColor(int);
-    Dashboard &setMotionAlert(bool);
-    Dashboard &setFireAlert(bool);
-    Dashboard &setForceNightTime(bool);
-    std::string getJSON() const;
-    bool getForceNightTime();
+  bool getDoor();
+  int getLampColor();
+  Dashboard &setDoor(bool);
+  Dashboard &setLampColor(int);
+  Dashboard &setMotionAlert(bool);
+  Dashboard &setFireAlert(bool);
+  Dashboard &setForceNightTime(bool);
+  std::string getJSON() const;
+  bool getForceNightTime();
 
-    bool getLock();
-    void lock();
-    void unlock();
+  bool getLock();
+  void lock();
+  void unlock();
 
 private:
-    bool openDoor = false;
-    bool forceNightTime = false;
-    int lampColor = 0;
-    bool lockFile = false;
-    bool motionAlert = false;
-    bool fireAlert = false;
+  bool openDoor = false;
+  bool forceNightTime = false;
+  int lampColor = 0;
+  bool lockFile = false;
+  bool motionAlert = false;
+  bool fireAlert = false;
 };
 #endif
