@@ -31,24 +31,25 @@
 #define DIGITAL_IC_IN 0x00
 #define DIGITAL_IC_OUT 0x01
 
-const IPAddress local_IP(172, 16, 99, 103); // 192, 168, 31, 5
-const IPAddress gateway(172, 16, 99, 1);    // 192, 168, 31, 4
+const IPAddress local_IP(192, 168, 31, 5); // 192, 168, 31, 5 || 172, 16, 99, 103
+const IPAddress gateway(192, 168, 31, 4);    // 192, 168, 31, 4 || 172, 16, 99, 1
 const IPAddress subnet(255, 255, 255, 0);
 
 void configureDigitalIC();
 void configureAnalogIC();
 
+unsigned int readAnalogInput(int ANALOG_CH);
 unsigned int readDigitalInputs();
 void setDigitalOutput(byte digitalBuffer);
 
-void readAnalogInputs(const int ANALOG_CH, unsigned int *analog1, unsigned int *analog2);
 void handleConnections();
 void connectWifi();
 
 bool button = false;
 bool led = false;
 bool buzzer = false;
-int smokeSensor = 0;
+unsigned int smokeSensor = 0;
+byte digitalBuffer = 0;
 
 ArduinoWiFiServer server(PORT);
 
@@ -58,19 +59,17 @@ void setup()
     Serial.begin(9600);
 
     connectWifi();
-
     Wire.begin();
-
     delay(1000);
 
     configureDigitalIC();
     configureAnalogIC();
-
+ 
     // Start TCP Server
     server.begin();
     Serial.println("TCP Server started listening...");
 
-    Serial.end();
+   // Serial.end();
 }
 
 void loop()
@@ -81,44 +80,39 @@ void loop()
     while (client.connected())
     {
         int inputData = readDigitalInputs();
-        smokeSensor = readAnalogInput(0);
-        button = inputData & (1 << 0);
-        smokeSensor = inputData & (1 << 1);
+        button |= inputData & (1 << 0);
+        unsigned int smokeSensor = readAnalogInput(0);
 
-        // Check if client has send a message, otherwise this is false.
+        // Check if client has sent a message, otherwise this is false.
         if (client)
         {
             // Handle clients sending request to the TCP server.
             handleConnections(client);
             setDigitalOutput((led << 5) | (buzzer << 4));
-
-            doorServo.write(door);
         }
     }
 }
 
-void handleConnections()
+void handleConnections(WiFiClient client)
 {
-    // Gets a client that is connected to the server and has data available for reading.
-    WiFiClient client = server.available();
+    String s = client.readStringUntil('}'); // read until the end of a json request
 
-    if (client) // Check if client has send a message, otherwise this is false.
-    {
-        String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
+    StaticJsonDocument<100> jsonIn;
+    deserializeJson(jsonIn, s);
+    led = jsonIn["ld"];
+    buzzer = jsonIn["bz"];
 
-        StaticJsonDocument<100> jsonIn;
-        deserializeJson(jsonIn, s);
-        led = jsonIn["ld"];
-        buzzer = jsonIn["bz"];
+    StaticJsonDocument<100> jsonOut;
+    jsonOut["btn"] = button;
+    jsonOut["smk"] = smokeSensor;
 
-        StaticJsonDocument<100> jsonOut;
-        jsonOut["btn"] = button;
-        jsonOut["smk"] = smokeSensor;
+    String output;
+    serializeJson(jsonOut, output);
+    client.print(output);
 
-        String output;
-        serializeJson(jsonOut, output);
-        client.print(output);
-    }
+    // Clear buffers
+    button = false;
+    smokeSensor = false;
 }
 
 /* Read PCA9554 inputs (DIO0-DIO3) */
@@ -161,15 +155,29 @@ void configureAnalogIC()
 }
 
 /* Read the analog channels of the MAX11647 */
-void readAnalogInputs(const int ANALOG_CH, unsigned int *analog1, unsigned int *analog2)
+unsigned int readAnalogInput(int ANALOG_CH)
 {
-    Wire.requestFrom(ANALOG_CH, 4);
-    *analog1 = Wire.read() & 0x03;
-    *analog1 = *analog1 << 8;
-    *analog1 = *analog1 | Wire.read();
-    *analog2 = Wire.read() & 0x03;
-    *analog2 = *analog2 << 8;
-    *analog2 = *analog2 | Wire.read();
+
+    unsigned int anin0;
+    unsigned int anin1;
+
+    if (ANALOG_CH == 0)
+    {
+        Wire.requestFrom(ANALOG_IC_ADDR, 4); // Request values from MAX11647 , 4 Bytes
+        anin0 = Wire.read() & 0x03;          // AND values with 0000 0011 Copy values to variable anin0
+        anin0 = anin0 << 8;                  // Shift anin0 8 places
+        anin0 = anin0 | Wire.read();         // OR anin1 with data from analog ic
+        return anin0;                        // Return value of anin0
+    }
+
+    if (ANALOG_CH == 1)
+    {
+        Wire.requestFrom(ANALOG_IC_ADDR, 4); // Request values from MAX11647 , 4 Bytes
+        anin1 = Wire.read() & 0x03;          // AND values with 0000 0011 Copy values to variable anin1
+        anin1 = anin1 << 8;                  // Shift anin1 8 places
+        anin1 = anin1 | Wire.read();         // OR anin1 with data from analog ic
+        return anin1;                        // Return value of anin1
+    }
 }
 
 void connectWifi()

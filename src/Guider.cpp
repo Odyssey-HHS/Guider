@@ -169,13 +169,12 @@ void logic()
       ;
     column.lock();
     dashboardModule.lock();
-    
     if (column.getButton())
     {
       std::cout << "DE ALARMKNOP IS INGEDRUKT! DE BEWONER IS IN NOOD!" << std::endl;
       column.setLed(true);
     }
-    if (column.getBuzzer() > 50)
+    if (column.getBuzzer() > 500)
     {
       std::cout << "ER IS BRAND!" << std::endl;
       for (int i = 0; i < 3; i++)
@@ -197,6 +196,8 @@ void logic()
     {
       column.setBuzzer(false);
     }
+    column.unlock();
+    dashboardModule.unlock();
 
     // Table Lamp Logic, turns white on motion, otherwise it runs to the dashboard provided color.
     while (tableLamp.getLock() || dashboardModule.getLock())
