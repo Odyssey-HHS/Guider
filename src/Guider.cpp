@@ -352,6 +352,11 @@ void dashboard()
         dashboardModule.setFireAlert(document["fireAlert"].GetBool());
       }
 
+      if (document.HasMember("panicAlert") && document["panicAlert"].IsBool())
+      {
+        dashboardModule.setPanicAlert(document["panicAlert"].GetBool());
+      }
+
       if (document.HasMember("fnt") && document["fnt"].IsBool())
       {
         dashboardModule.setForceNightTime(document["fnt"].GetBool());

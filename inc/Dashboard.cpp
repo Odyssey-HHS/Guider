@@ -74,6 +74,13 @@ Dashboard &Dashboard::setFireAlert(bool val)
     return *this;
 }
 
+Dashboard &Dashboard::setPanicAlert(bool val)
+{
+    this->changed = true;
+    this->panicAlert = val;
+    return *this;
+}
+
 Dashboard &Dashboard::update()
 {
     this->changed = false;
