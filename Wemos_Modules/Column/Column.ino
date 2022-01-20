@@ -110,9 +110,9 @@ void handleConnections(WiFiClient client)
     serializeJson(jsonOut, output);
     client.print(output);
 
-    // Clear buffers
+    //clear buffer
     button = false;
-    smokeSensor = false;
+    buzzer = false;
 }
 
 /* Read PCA9554 inputs (DIO0-DIO3) */
