@@ -160,23 +160,25 @@ unsigned int readAnalogInput(int ANALOG_CH)
 
     unsigned int anin0;
     unsigned int anin1;
+    Wire.requestFrom(ANALOG_IC_ADDR, 4); // Request values from MAX11647 , 4 Bytes
 
+    // Read MAX11647
     if (ANALOG_CH == 0)
     {
-        Wire.requestFrom(ANALOG_IC_ADDR, 4); // Request values from MAX11647 , 4 Bytes
-        anin0 = Wire.read() & 0x03;          // AND values with 0000 0011 Copy values to variable anin0
-        anin0 = anin0 << 8;                  // Shift anin0 8 places
-        anin0 = anin0 | Wire.read();         // OR anin1 with data from analog ic
-        return anin0;                        // Return value of anin0
+        anin0 = Wire.read() & 0x03;  // AND values with 0000 0011 Copy values to variable anin0
+        anin0 = anin0 << 8;          // Shift anin0 8 places
+        anin0 = anin0 | Wire.read(); // OR anin1 with data from analog ic
+        return anin0;                // Return value of anin0
     }
 
     if (ANALOG_CH == 1)
     {
-        Wire.requestFrom(ANALOG_IC_ADDR, 4); // Request values from MAX11647 , 4 Bytes
-        anin1 = Wire.read() & 0x03;          // AND values with 0000 0011 Copy values to variable anin1
-        anin1 = anin1 << 8;                  // Shift anin1 8 places
-        anin1 = anin1 | Wire.read();         // OR anin1 with data from analog ic
-        return anin1;                        // Return value of anin1
+        Wire.read();
+        Wire.read();
+        anin1 = Wire.read() & 0x03;  // AND values with 0000 0011 Copy values to variable anin1
+        anin1 = anin1 << 8;          // Shift anin1 8 places
+        anin1 = anin1 | Wire.read(); // OR anin1 with data from analog ic
+        return anin1;                // Return value of anin1
     }
 }
 
