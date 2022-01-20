@@ -12,8 +12,13 @@ void Column::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  this->button = document["btn"].GetBool();
-  this->smokeSensor = document["smk"].GetInt();
+  if (!document.IsObject()) return;
+
+  if (document.HasMember("btn") && document["btn"].IsBool())
+      this->button = document["btn"].GetBool();
+
+  if (document.HasMember("smk") && document["smk"].IsInt())
+    this->smokeSensor = document["smk"].GetInt();
 }
 
 std::string Column::getOutputsJSON() const
@@ -36,33 +41,9 @@ std::string Column::getOutputsJSON() const
   return output;
 }
 
-std::string Column::getInputsJSON() const
-{
-  rapidjson::Document document;
-  document.SetObject();
-
-  rapidjson::Document::AllocatorType &allocator = document.GetAllocator();
-
-  document.AddMember("btn", this->button, allocator);
-  document.AddMember("smk", this->smokeSensor, allocator);
-
-  // Stringify object
-  rapidjson::StringBuffer buffer;
-  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-  document.Accept(writer);
-
-  std::string output = buffer.GetString();
-  return output;
-}
-
 bool Column::getButton()
 {
   return this->button;
-}
-
-bool Column::getBuzzer()
-{
-  return this->buzzer;
 }
 
 bool Column::getLed()

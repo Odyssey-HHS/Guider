@@ -19,7 +19,6 @@ public:
   std::string getInputsJSON() const;
 
   bool getButton();
-  bool getBuzzer();
   int getSmokeSensor();
   bool getLed();
 
