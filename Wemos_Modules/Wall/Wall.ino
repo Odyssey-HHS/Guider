@@ -22,17 +22,21 @@
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <ArduinoWiFiServer.h>
+#include <Adafruit_NeoPixel.h>
 
-#define WIFI_SSID "3.1415"
-#define WIFI_PASSWD "YouShallNotPassword"
+#define WIFI_SSID "Alice"//"3.1415"//
+#define WIFI_PASSWD "AliceNet"//"YouShallNotPassword"//
 #define PORT 8080
 #define ANALOG_IC_ADDR 0x36
 #define DIGITAL_IC_ADDR 0x38
 #define DIGITAL_IC_IN 0x00
 #define DIGITAL_IC_OUT 0x01
+#define NUM_LEDS 3
+#define NUM_PIXELS 12
+#define DATA_PIN 14
 
-const IPAddress local_IP(172, 16, 99, 102);
-const IPAddress gateway(172, 16, 99, 1);
+const IPAddress local_IP(192,168,4,3);//(172, 16, 99, 104);//
+const IPAddress gateway(192,168,4,1);//(172, 16, 99, 1);//
 const IPAddress subnet(255, 255, 255, 0);
 
 void configureDigitalIC();
@@ -42,27 +46,35 @@ unsigned int readDigitalInputs();
 void setDigitalOutput(const int pin, const bool state);
 
 void readAnalogInput();
-void handleConnections(WiFiClient client);
+void handleConnections();
 void connectWifi();
 
-bool led = false;
-bool sw = false;
-int ps = 0;
+
+int ledStrip = 0;
+int potMeter;
+int lightSen;
+bool shadePan = 0;
 
 ArduinoWiFiServer server(PORT);
+Adafruit_NeoPixel pixels(NUM_LEDS, DATA_PIN, NEO_GRB + NEO_KHZ800);
 
 void setup()
 {
     // Start up Serial debug
     Serial.begin(9600);
+    pinMode(DATA_PIN,OUTPUT);
 
     connectWifi();
 
     Wire.begin();
 
     delay(1000);
+    //analogWrite(14,255); 
+     pixels.show();
+
 
     configureDigitalIC();
+    configureAnalogIC();
 
     // Start TCP Server
     server.begin();
@@ -73,44 +85,42 @@ void setup()
 
 void loop()
 {
-    WiFiClient client = server.available();
+    // Handle clients sending request to the TCP server.
+    handleConnections();
 
-    // Don't check for an available client while we still know an connected client.
-    while (client.connected())
-    {
-        int inputData = readDigitalInputs();
-        sw |= inputData & (1 << 0);
-        ps = readAnalogInput(0);
-
-        Serial.println(ps);
-
-        // Check if client has send a message, otherwise this is false.
-        if (client)
-        {
-            // Handle clients sending request to the TCP server.
-            handleConnections(client);
-            setDigitalOutput(4, led);
-        }
-    }
+    int inputData = readDigitalInputs();
+    //Serial.println(inputData);
+    setDigitalOutput(4, shadePan);
+    lightSen = readAnalogInput(0);
+    Serial.print(lightSen);
+    Serial.print(" & "); 
+    potMeter = readAnalogInput(1);
+    Serial.println(potMeter);
+    SetPixels();
 }
 
-void handleConnections(WiFiClient client)
+void handleConnections()
 {
-    String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
+    // Gets a client that is connected to the server and has data available for reading.
+    WiFiClient client = server.available();
 
-    StaticJsonDocument<100> jsonIn;
-    deserializeJson(jsonIn, s);
-    led = jsonIn["Led"];
+    if (client) // Check if client has send a message, otherwise this is false.
+    {
+        String s = client.readStringUntil('}'); // Read the incoming message. Delimited by a new line char.
 
-    StaticJsonDocument<100> jsonOut;
-    jsonOut["Sw"] = sw;
-    jsonOut["PS"] = ps;
+        StaticJsonDocument<100> jsonIn;
+        deserializeJson(jsonIn, s);
+        shadePan = jsonIn["lcd"];
+        ledStrip = jsonIn["rgb"];
 
-    String output;
-    serializeJson(jsonOut, output);
-    client.print(output);
+        StaticJsonDocument<100> jsonOut;
+        jsonOut["ldr"] = lightSen;
+        jsonOut["ptm"] = potMeter;
 
-    sw = false;
+        String output;
+        serializeJson(jsonOut, output);
+        client.print(output);
+    }
 }
 
 /* Read PCA9554 inputs (DIO0-DIO3) */
@@ -158,11 +168,11 @@ unsigned int readAnalogInput(int ANALOG_CH)
 
     unsigned int anin0;
     unsigned int anin1;
+    Wire.requestFrom(ANALOG_IC_ADDR, 4);     // Request values from MAX11647 , 4 Bytes
 
     // Read MAX11647
     if (ANALOG_CH == 0)
     {
-        Wire.requestFrom(ANALOG_IC_ADDR, 4); // Request values from MAX11647 , 4 Bytes
         anin0 = Wire.read() & 0x03;          // AND values with 0000 0011 Copy values to variable anin0
         anin0 = anin0 << 8;                  // Shift anin0 8 places
         anin0 = anin0 | Wire.read();         // OR anin1 with data from analog ic
@@ -171,7 +181,8 @@ unsigned int readAnalogInput(int ANALOG_CH)
 
     if (ANALOG_CH == 1)
     {
-        Wire.requestFrom(ANALOG_IC_ADDR, 4); // Request values from MAX11647 , 4 Bytes
+        Wire.read();
+        Wire.read();
         anin1 = Wire.read() & 0x03;          // AND values with 0000 0011 Copy values to variable anin1
         anin1 = anin1 << 8;                  // Shift anin1 8 places
         anin1 = anin1 | Wire.read();         // OR anin1 with data from analog ic
@@ -205,4 +216,15 @@ void connectWifi()
     Serial.println();
     Serial.print("Connected to WiFi network: IP: ");
     Serial.println(ip);
+}
+void SetPixels() 
+{
+
+  for (int i = 0; i < NUM_LEDS; i++) 
+  {
+
+    // pixels.Color takes RGB values, from 255,0,0 up to 0,255,255
+    pixels.setPixelColor(i, pixels.Color(ledStrip, 0, 0)); //Red, Green, Blue
+    pixels.show(); // This sends the updated pixel color to the hardware.
+  }
 }

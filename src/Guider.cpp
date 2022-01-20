@@ -3,6 +3,7 @@
 //#define USE_BED
 //#define USE_TABLELAMP
 #define USE_COLUMN
+//#define USE_WALL
 
 #define DASHBOARD_PORT
 
@@ -27,6 +28,7 @@
 #include "Chair.h"
 #include "Bed.h"
 #include "Column.h"
+#include "Wall.h"
 
 #include "Timer.h"
 
@@ -40,6 +42,7 @@ Chair chair;
 Bed bed;
 TableLamp tableLamp;
 Door door;
+Wall wall;
 
 // Declare timers
 Timer doorLightTimer = Timer(5);
@@ -52,8 +55,6 @@ Timer columnBuzzer = Timer(1);
 void fetcher();
 void logic();
 void dashboard();
-
-int socket_fd = 0;
 
 // The main function, creates the connections to the modules and spins up the threads.
 int main(int argc, char const *argv[])
@@ -85,6 +86,10 @@ int main(int argc, char const *argv[])
   std::cout << "Connecting to Door..\n";
   Client doorClient(DOOR_MODULE, 8080);
 #endif
+#ifdef USE_WALL
+  std::cout << "Connecting to Wall..\n";
+  Client wallClient(WALL_MODULE, 8080);
+#endif
 
 // Create a new module using the connection created above.
 #ifdef USE_COLUMN
@@ -101,6 +106,9 @@ int main(int argc, char const *argv[])
 #endif
 #ifdef USE_CHAIR
   chair = Chair(chairClient);
+#endif
+#ifdef USE_WALL
+  wall = Wall(wallClient);
 #endif
 
   // Spin up the threads.
@@ -140,13 +148,10 @@ void fetcher()
     std::cout << "Fetching Bed...\n";
     bed.fetch();
 #endif
-
-    if (dashboardModule.hasChanged())
-    {
-      std::cout << "Updating Dashboard...\n";
-      server.send(socket_fd, dashboardModule.getJSON().c_str());
-      dashboardModule.update();
-    }
+#ifdef USE_WALL
+    std::cout << "Fetching Wall...\n";
+    wall.fetch();
+#endif
 
     std::cout << "Starting new fetching round...\n";
   }
@@ -233,6 +238,7 @@ void logic()
     }
     else if (door.getButtonOut())
     {
+      dashboardModule.setFireAlert(true);
       if (isNightTime(current))
       {
         door.setLedIn(true).setLedOut(true);
@@ -280,6 +286,10 @@ void logic()
         bed.setled(0);
       }
     }
+    else if (!isNightTime(current)) 
+    {
+      bed.setled(0);
+    } 
     else if (!bedTimer.finished())
     {
       bedTimer.start();
@@ -321,6 +331,21 @@ void logic()
     chair.setLed(chair.switchCurrent);
     chair.setMotor(chair.switchCurrent);
     chair.unlock();
+
+    // Wall logic
+    while (wall.getLock())
+      ;
+    wall.lock();
+    if(wall.getLightSen() <= 600)// && (isNightTime(current)))
+    {
+      wall.setShadePan(1);
+    }
+    else
+    {
+      wall.setShadePan(0);
+    }
+    wall.setLedStrip(wall.getPotMeter() / 4);
+    wall.unlock();  
   }
 }
 
@@ -330,7 +355,7 @@ void dashboard()
   {
     std::cout << "Waiting for connection\n";
     // Wait for client (blocking)
-    socket_fd = server.awaitClient();
+    int socket_fd = server.awaitClient();
 
     std::cout << "Connected!\n";
 
@@ -374,7 +399,19 @@ void dashboard()
         dashboardModule.setMotionAlert(document["motionAlert"].GetBool());
       }
 
+      if (document.HasMember("fireAlert") && document["fireAlert"].IsBool())
+      {
+        dashboardModule.setFireAlert(document["fireAlert"].GetBool());
+      }
+
+      if (document.HasMember("fnt") && document["fnt"].IsBool())
+      {
+        dashboardModule.setForceNightTime(document["fnt"].GetBool());
+      }
+
       std::cout << "Recieved!  " << buffer << "\n";
+
+      server.send(socket_fd, dashboardModule.getJSON().c_str());
       dashboardModule.unlock();
     }
 
