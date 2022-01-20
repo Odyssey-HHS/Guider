@@ -14,8 +14,6 @@ public:
     Dashboard &setFireAlert(bool);
     Dashboard &setForceNightTime(bool);
     std::string getJSON() const;
-    Dashboard &update();
-    bool hasChanged();
     bool getForceNightTime();
 
     bool getLock();
@@ -29,6 +27,5 @@ private:
     bool lockFile = false;
     bool motionAlert = false;
     bool fireAlert = false;
-    bool changed = false;
 };
 #endif

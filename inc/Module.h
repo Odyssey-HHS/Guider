@@ -22,14 +22,8 @@ public:
 
     /* Get the current lock status of this object. Returns an true on lock. */
     bool getLock();
-
-    void setUpdated(bool);
-
-    bool getUpdated();
-
 private:
     Client connection;
     bool lockFile = false;
-    bool updated = false;
 };
 #endif // MODULE_H

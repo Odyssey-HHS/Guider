@@ -4,16 +4,15 @@
 class Chair : public Module
 {
 private:
-  bool Motor = false;
-  bool Led = false;
-  bool Switch = false;
-  int Fsensor = 0;
+  bool motor = false;
+  bool led = false;
+  bool switch0 = false;
+  int fsensor = 0;
 
 public:
   Chair();
   Chair(Client client);
 
-  bool switchPast;
   bool switchCurrent;
 
   void setInputsJSON(const std::string json);
@@ -22,26 +21,26 @@ public:
   // this will set the status of the motor
   Chair &setMotor(bool state)
   {
-    Motor = state;
+    motor = state;
     return *this;
   }
 
   // this will set the status of the led
   Chair &setLed(bool state)
   {
-    Led = state;
+    led = state;
     return *this;
   }
 
   // this shows the current status of the switch
   bool getSwitch()
   {
-    return Switch;
+    return switch0;
   }
 
   // this shows the value of the Forcesensor
   int getFsensor()
   {
-    return Fsensor;
+    return fsensor;
   }
 };

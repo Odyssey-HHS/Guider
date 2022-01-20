@@ -13,7 +13,6 @@ public:
 
     void setInputsJSON(const std::string json);
     std::string getOutputsJSON() const;
-    std::string getInputsJSON() const;
 
     Door &setLedIn(bool val);
     Door &setLedOut(bool val);

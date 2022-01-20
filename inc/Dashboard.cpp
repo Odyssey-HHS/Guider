@@ -41,48 +41,32 @@ bool Dashboard::getForceNightTime()
 
 Dashboard &Dashboard::setDoor(bool val)
 {
-    this->changed = true;
     this->openDoor = val;
     return *this;
 }
 
 Dashboard &Dashboard::setForceNightTime(bool val)
 {
-    this->changed = true;
     this->forceNightTime = val;
     return *this;
 }
 
 Dashboard &Dashboard::setLampColor(int val)
 {
-    this->changed = true;
     this->lampColor = val;
     return *this;
 }
 
 Dashboard &Dashboard::setMotionAlert(bool val)
 {
-    this->changed = true;
     this->motionAlert = val;
     return *this;
 }
 
 Dashboard &Dashboard::setFireAlert(bool val)
 {
-    this->changed = true;
     this->fireAlert = val;
     return *this;
-}
-
-Dashboard &Dashboard::update()
-{
-    this->changed = false;
-    return *this;
-}
-
-bool Dashboard::hasChanged()
-{
-    return this->changed;
 }
 
 bool Dashboard::getLock()

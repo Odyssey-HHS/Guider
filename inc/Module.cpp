@@ -42,13 +42,3 @@ bool Module::getLock()
 {
     return this->lockFile;
 }
-
-void Module::setUpdated(bool status)
-{
-    this->updated = status;
-}
-
-bool Module::getUpdated()
-{
-    return this->updated;
-}
