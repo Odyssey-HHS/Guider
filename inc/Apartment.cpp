@@ -44,21 +44,34 @@ Apartment::Apartment()
   Client wallClient(WALL_MODULE, 8080);
 #endif
 
+#ifdef USE_COLUMN
+  std::cout << "Connecting to Column..\n";
+  Client columnClient(COLUMN_MODULE, 8080);
+#endif
+
   // Create a new module using the connection created above.
 #ifdef USE_BED
   bed = Bed(bedClient);
 #endif
+
 #ifdef USE_TABLELAMP
   tableLamp = TableLamp(lampClient);
 #endif
+
 #ifdef USE_DOOR
   door = Door(doorClient);
 #endif
+
 #ifdef USE_CHAIR
   chair = Chair(chairClient);
 #endif
+
 #ifdef USE_WALL
   wall = Wall(wallClient);
+#endif
+
+#ifdef USE_COLUMN
+  column = Column(columnClient);
 #endif
 }
 
@@ -85,6 +98,11 @@ TableLamp *Apartment::getTableLamp()
 Wall *Apartment::getWall()
 {
   return &this->wall;
+}
+
+Column *Apartment::getColumn()
+{
+  return &this->column;
 }
 
 Dashboard *Apartment::getDashboard()

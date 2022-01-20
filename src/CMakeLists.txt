@@ -9,7 +9,7 @@ target_link_libraries(Guider PUBLIC Dashboard)
 target_link_libraries(Guider PUBLIC Server)
 target_link_libraries(Guider PUBLIC Client)
 target_link_libraries(Guider PUBLIC Module)
-
+target_link_libraries(Guider PUBLIC Column)
 target_link_libraries(Guider PUBLIC Bed)
 target_link_libraries(Guider PUBLIC TableLamp)
 target_link_libraries(Guider PUBLIC Door)

@@ -4,6 +4,7 @@
 #include <ctime>
 #include <chrono>
 #include <thread>
+#include <string>
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -13,7 +14,7 @@
 
 Apartment apartment;
 
-// Declair the functions used in seperate threads.
+// Declare the functions used in seperate threads.
 void fetcher();
 void logic();
 void dashboard();
@@ -32,12 +33,16 @@ int main(int argc, char const *argv[])
   dashboardThread.join();
 }
 
-/* Updates the module objects syncing them with the wemos hardware. */
+// Updates the module objects syncing them with the wemos hardware.
 void fetcher()
 {
   while (1)
   {
 // Synchronize the object with the Wemos module
+#ifdef USE_COLUMN
+    std::cout << "Fetching apartment.getColumn()->..\n";
+    apartment.getColumn()->fetch();
+#endif
 #ifdef USE_CHAIR
     std::cout << "Fetching Chair.\n";
     apartment.getChair()->fetch();
@@ -74,6 +79,44 @@ void logic()
   while (1)
   {
     std::time_t current = std::time(nullptr);
+
+    // Column logic
+    while (apartment.getColumn()->getLock() || apartment.getDashboard()->getLock())
+      ;
+    apartment.getColumn()->lock();
+    apartment.getDashboard()->lock();
+
+    // Panic Button
+    if (apartment.getColumn()->getButton() && apartment.getColumn()->timer.finished())
+    {
+      std::cout << "DE ALARMKNOP IS INGEDRUKT! DE BEWONER IS IN NOOD!" << std::endl;
+      // apartment.getDashboard()->setPanicAlert(true);
+      apartment.getColumn()->setLed(true);
+      apartment.getColumn()->timer.start();
+    }
+    // Fire alarm
+    if (apartment.getColumn()->getSmokeSensor() > 700 && apartment.getColumn()->timer.finished() && apartment.getDashboard()->getFireAlert() == false)
+    {
+      apartment.getColumn()->timer.start(4);
+      apartment.getDashboard()->setFireAlert(true);
+      apartment.getColumn()->setBuzzer(true);
+    }
+
+    // Doorbel
+    if (apartment.getDoor()->getButtonOut())
+    {
+      apartment.getColumn()->timer.start();
+      apartment.getColumn()->setBuzzer(true);
+    }
+
+    // Reset
+    if (apartment.getColumn()->timer.finished())
+    {
+      apartment.getColumn()->setBuzzer(false);
+      apartment.getColumn()->setLed(false);
+    }
+    apartment.getColumn()->unlock();
+    apartment.getDashboard()->unlock();
 
     // Table Lamp Logic, turns white on motion, otherwise it runs to the dashboard provided color.
     while (apartment.getTableLamp()->getLock() || apartment.getDashboard()->getLock())

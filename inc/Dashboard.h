@@ -15,6 +15,7 @@ public:
   Dashboard &setForceNightTime(bool);
   std::string getJSON() const;
   bool getForceNightTime();
+  bool getFireAlert();
 
   bool getLock();
   void lock();

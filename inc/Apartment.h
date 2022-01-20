@@ -8,6 +8,7 @@
 #include "Server.h"
 #include "TableLamp.h"
 #include "Wall.h"
+#include "Column.h"
 
 class Apartment
 {
@@ -17,6 +18,7 @@ private:
   Door door;
   TableLamp tableLamp;
   Wall wall;
+  Column column;
   Dashboard dashboard;
   Server server = Server(8000);
 
@@ -27,6 +29,7 @@ public:
   Door *getDoor();
   TableLamp *getTableLamp();
   Wall *getWall();
+  Column *getColumn();
   Dashboard *getDashboard();
   Server getServer();
 };
