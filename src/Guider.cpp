@@ -32,6 +32,7 @@
 
 #include "Timer.h"
 
+
 // Declare dashboard server and class
 Server server(8000);
 Dashboard dashboardModule;
@@ -49,7 +50,7 @@ Timer doorLightTimer = Timer(5);
 Timer tableLampTimer = Timer(2);
 Timer bedTimer = Timer(10);
 Timer chairToggleTimer = Timer(1);
-Timer columnBuzzer = Timer(1);
+Timer columnTimer = Timer(1);
 
 // Declare the functions used in seperate threads.
 void fetcher();
@@ -174,32 +175,40 @@ void logic()
       ;
     column.lock();
     dashboardModule.lock();
-    if (column.getButton())
+
+    // Panic Button
+    if (column.getButton() && columnTimer.finished())
     {
       std::cout << "DE ALARMKNOP IS INGEDRUKT! DE BEWONER IS IN NOOD!" << std::endl;
       column.setLed(true);
+      columnTimer.start();
     }
-    if (column.getBuzzer() > 500)
+    // Fire alarm
+    if (column.getSmokeSensor() > 700 && columnTimer.finished())
     {
+      columnTimer.start(2);
       std::cout << "ER IS BRAND!" << std::endl;
-      for (int i = 0; i < 3; i++)
+      while (!columnTimer.finished())
       {
         column.setBuzzer(true);
-        columnBuzzer.start();
-        if (columnBuzzer.finished())
-        {
-          column.setBuzzer(false);
-        }
-      }
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        column.setBuzzer(false);
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+      } 
     }
+
+    // Doorbel
     if (door.getButtonOut())
     {
-      columnBuzzer.start();
+      columnTimer.start();
       column.setBuzzer(true);
     }
-    if (columnBuzzer.finished())
+
+    // Reset
+    if (columnTimer.finished())
     {
       column.setBuzzer(false);
+      column.setLed(false);
     }
     column.unlock();
     dashboardModule.unlock();
@@ -286,10 +295,10 @@ void logic()
         bed.setled(0);
       }
     }
-    else if (!isNightTime(current)) 
+    else if (!isNightTime(current))
     {
       bed.setled(0);
-    } 
+    }
     else if (!bedTimer.finished())
     {
       bedTimer.start();
@@ -336,7 +345,7 @@ void logic()
     while (wall.getLock())
       ;
     wall.lock();
-    if(wall.getLightSen() <= 600)// && (isNightTime(current)))
+    if (wall.getLightSen() <= 600) // && (isNightTime(current)))
     {
       wall.setShadePan(1);
     }
@@ -345,7 +354,7 @@ void logic()
       wall.setShadePan(0);
     }
     wall.setLedStrip(wall.getPotMeter() / 4);
-    wall.unlock();  
+    wall.unlock();
   }
 }
 
