@@ -1,4 +1,4 @@
-#define DASHBOARD_PORT
+#include "enableModules.h"
 
 #include <iostream>
 #include <ctime>
@@ -39,23 +39,23 @@ void fetcher()
   {
 // Synchronize the object with the Wemos module
 #ifdef USE_CHAIR
-    std::cout << "Fetching apartment.getChair()->..\n";
+    std::cout << "Fetching Chair.\n";
     apartment.getChair()->fetch();
 #endif
 #ifdef USE_TABLELAMP
-    std::cout << "Fetching apartment.getTableLamp()->..\n";
+    std::cout << "Fetching TableLamp.\n";
     apartment.getTableLamp()->fetch();
 #endif
 #ifdef USE_DOOR
-    std::cout << "Fetching apartment.getDoor()->..\n";
+    std::cout << "Fetching Door.\n";
     apartment.getDoor()->fetch();
 #endif
 #ifdef USE_BED
-    std::cout << "Fetching apartment.getBed()->..\n";
+    std::cout << "Fetching Bed.\n";
     apartment.getBed()->fetch();
 #endif
 #ifdef USE_WALL
-    std::cout << "Fetching apartment.getWall()->..\n";
+    std::cout << "Fetching Wall.\n";
     apartment.getWall()->fetch();
 #endif
 
