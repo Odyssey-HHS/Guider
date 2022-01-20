@@ -40,7 +40,7 @@ void fetcher()
   {
 // Synchronize the object with the Wemos module
 #ifdef USE_COLUMN
-    std::cout << "Fetching apartment.getColumn()->..\n";
+    std::cout << "Fetching Column.\n";
     apartment.getColumn()->fetch();
 #endif
 #ifdef USE_CHAIR
@@ -151,7 +151,7 @@ void logic()
     // Panic Button
     if (apartment.getColumn()->getButton() && apartment.getColumn()->timer.finished())
     {
-      // apartment.getDashboard()->setPanicAlert(true);
+      apartment.getDashboard()->setPanicAlert(true);
       apartment.getColumn()->setLed(true);
       apartment.getColumn()->timer.start();
     }
