@@ -29,6 +29,11 @@ bool Dashboard::getDoor()
     return this->openDoor;
 }
 
+bool Dashboard::getFireAlert()
+{
+    return this->fireAlert;
+}
+
 int Dashboard::getLampColor()
 {
     return this->lampColor;

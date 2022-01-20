@@ -17,6 +17,7 @@ public:
     Dashboard &update();
     bool hasChanged();
     bool getForceNightTime();
+    bool getFireAlert();
 
     bool getLock();
     void lock();

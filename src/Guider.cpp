@@ -180,21 +180,15 @@ void logic()
     if (column.getButton() && columnTimer.finished())
     {
       std::cout << "DE ALARMKNOP IS INGEDRUKT! DE BEWONER IS IN NOOD!" << std::endl;
+      // dashboardModule.setPanicAlert(true);
       column.setLed(true);
       columnTimer.start();
     }
     // Fire alarm
-    if (column.getSmokeSensor() > 700 && columnTimer.finished())
+    if (column.getSmokeSensor() > 700 && columnTimer.finished() && dashboardModule.getFireAlert() == false)
     {
-      columnTimer.start(2);
-      std::cout << "ER IS BRAND!" << std::endl;
-      while (!columnTimer.finished())
-      {
-        column.setBuzzer(true);
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        column.setBuzzer(false);
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
-      } 
+      columnTimer.start(4);
+      dashboardModule.setFireAlert(true);
     }
 
     // Doorbel
