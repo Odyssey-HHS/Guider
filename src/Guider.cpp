@@ -189,6 +189,7 @@ void logic()
     {
       columnTimer.start(4);
       dashboardModule.setFireAlert(true);
+      column.setBuzzer(true);
     }
 
     // Doorbel
