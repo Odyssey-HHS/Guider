@@ -40,31 +40,31 @@ void fetcher()
   {
 // Synchronize the object with the Wemos module
 #ifdef USE_COLUMN
-    std::cout << "Fetching Column.\n";
+    //std::cout << "Fetching Column.\n";
     apartment.getColumn()->fetch();
 #endif
 #ifdef USE_CHAIR
-    std::cout << "Fetching Chair.\n";
+    // std::cout << "Fetching Chair.\n";
     apartment.getChair()->fetch();
 #endif
 #ifdef USE_TABLELAMP
-    std::cout << "Fetching TableLamp.\n";
+    // std::cout << "Fetching TableLamp.\n";
     apartment.getTableLamp()->fetch();
 #endif
 #ifdef USE_DOOR
-    std::cout << "Fetching Door.\n";
+    // std::cout << "Fetching Door.\n";
     apartment.getDoor()->fetch();
 #endif
 #ifdef USE_BED
-    std::cout << "Fetching Bed.\n";
+    // std::cout << "Fetching Bed.\n";
     apartment.getBed()->fetch();
 #endif
 #ifdef USE_WALL
-    std::cout << "Fetching Wall.\n";
+    // std::cout << "Fetching Wall.\n";
     apartment.getWall()->fetch();
 #endif
 
-    std::cout << "Starting new fetching round...\n";
+    // std::cout << "Starting new fetching round...\n";
   }
 }
 
