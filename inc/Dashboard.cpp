@@ -14,6 +14,7 @@ std::string Dashboard::getJSON() const
   document.AddMember("lampColor", this->lampColor, allocator);
   document.AddMember("motionAlert", this->motionAlert, allocator);
   document.AddMember("fireAlert", this->fireAlert, allocator);
+  document.AddMember("panicAlert", this->panicAlert, allocator);
 
   // Stringify object
   rapidjson::StringBuffer buffer;
