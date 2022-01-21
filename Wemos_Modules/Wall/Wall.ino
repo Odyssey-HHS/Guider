@@ -24,8 +24,8 @@
 #include <ArduinoWiFiServer.h>
 #include <Adafruit_NeoPixel.h>
 
-#define WIFI_SSID "Alice"      //"3.1415"//
-#define WIFI_PASSWD "AliceNet" //"YouShallNotPassword"//
+#define WIFI_SSID "3.1415"      //"3.1415"//
+#define WIFI_PASSWD "YouShallNotPassword" //"YouShallNotPassword"//
 #define PORT 8080
 #define ANALOG_IC_ADDR 0x36
 #define DIGITAL_IC_ADDR 0x38
@@ -35,8 +35,8 @@
 #define NUM_PIXELS 12
 #define DATA_PIN 14
 
-const IPAddress local_IP(192, 168, 4, 3); //(172, 16, 99, 104);//
-const IPAddress gateway(192, 168, 4, 1);  //(172, 16, 99, 1);//
+const IPAddress local_IP(172, 16, 99, 104); //(172, 16, 99, 104);//
+const IPAddress gateway(172, 16, 99, 1);  //(172, 16, 99, 1);//
 const IPAddress subnet(255, 255, 255, 0);
 
 void configureDigitalIC();
