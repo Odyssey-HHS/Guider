@@ -286,7 +286,6 @@ void logic()
 
 void dashboard()
 {
-  sleep(10);
   while (1)
   {
     std::cout << "Waiting for connection\n";
