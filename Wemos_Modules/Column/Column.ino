@@ -69,7 +69,7 @@ void setup()
     server.begin();
     Serial.println("TCP Server started listening...");
 
-   // Serial.end();
+    Serial.end();
 }
 
 void loop()
@@ -81,7 +81,7 @@ void loop()
     {
         int inputData = readDigitalInputs();
         button |= inputData & (1 << 0);
-        unsigned int smokeSensor = readAnalogInput(0);
+        smokeSensor = readAnalogInput(0);
 
         // Check if client has sent a message, otherwise this is false.
         if (client)
