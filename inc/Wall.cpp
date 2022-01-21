@@ -12,8 +12,14 @@ void Wall::setInputsJSON(const std::string json)
   rapidjson::Document document;
   document.Parse(json.c_str());
 
-  this->lightSen = document["ldr"].GetInt();
-  this->potMeter = document["ptm"].GetInt();
+  if (!document.IsObject())
+    return;
+
+  if (document.HasMember("ldr") && document["ldr"].IsInt())
+    this->lightSen = document["ldr"].GetInt();
+
+  if (document.HasMember("ptm") && document["ptm"].IsInt())
+    this->potMeter = document["ptm"].GetInt();
 }
 
 std::string Wall::getOutputsJSON() const
