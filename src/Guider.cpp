@@ -158,7 +158,7 @@ void logic()
     // Fire alarm
     if (apartment.getColumn()->getSmokeSensor() > 700 && apartment.getColumn()->timer.finished() && apartment.getDashboard()->getFireAlert() == false)
     {
-      apartment.getColumn()->timer.start(4);
+      apartment.getColumn()->timer.start(15);
       apartment.getDashboard()->setFireAlert(true);
       apartment.getColumn()->setBuzzer(true);
     }
