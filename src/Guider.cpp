@@ -279,7 +279,13 @@ void logic()
     }
 
     // Led Strip
-    apartment.getWall()->setLedStrip(apartment.getWall()->getPotMeter() / 4);
+    int value = apartment.getWall()->getPotMeter();
+
+    if (value > 20) {
+      apartment.getWall()->setLedStrip(apartment.getWall()->getPotMeter() / 4);
+    } else {
+      apartment.getWall()->setLedStrip(0);
+    }
     apartment.getWall()->unlock();
   }
 }
